@@ -2,6 +2,37 @@ name: Build Android App (APK + AAB)
 
 # ===========================================================================
 #  Pothik — cloud build. You do NOT need Android Studio on your computer.
+#
+#  HOW TO RUN IT
+#    GitHub -> your repository -> "Actions" tab -> "Build Android App"
+#    -> "Run workflow". Wait ~5-10 minutes. The APK appears under
+#    "Artifacts" at the bottom of the run page (and under "Releases").
+#
+#  ---------------------------------------------------------------------------
+#  OPTIONAL SECRETS  (Settings -> Secrets and variables -> Actions)
+#
+#    APP_URL            https://your-live-site.com
+#        Empty  -> the APK BUNDLES the site (works offline, no server).
+#        Set    -> the APK LOADS your live site. Use this once the site is
+#                  published: two phones then share one database, which is
+#                  required for real passenger<->driver matching, and bug
+#                  fixes reach installed users without a new APK.
+#
+#    KEYSTORE_BASE64    the whole .jks file, base64-encoded
+#    KEYSTORE_PASSWORD  the store password you chose
+#    KEY_ALIAS          e.g. pothik
+#    KEY_PASSWORD       the key password you chose
+#        All four present -> a SIGNED release APK is produced (verified with
+#                            `apksigner verify` before it is uploaded).
+#        Any missing      -> an UNSIGNED release APK plus a debug-key APK are
+#                            produced instead. Both still install.
+#
+#    Don't have a keystore yet? Run the companion workflow
+#    "Generate Signing Keystore (run once)" first — it needs no local tools.
+#
+#    A self-signed key proves the app is *consistently from you* and lets it
+#    update over itself without wiping data. It does NOT remove Android's
+#    "install from unknown sources" warning — only Google Play does that.
 # ===========================================================================
 
 on:
@@ -33,6 +64,8 @@ env:
 jobs:
   # ------------------------------------------------------------------------
   # 1. Cheap gate: every browser script must COMPILE.
+  #    A single bad line in one .js file can kill an entire screen with no
+  #    build error at all. This 50 ms check prevents shipping that.
   # ------------------------------------------------------------------------
   verify:
     name: Check JavaScript
@@ -62,6 +95,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
+          # No `cache: npm` on purpose: this repo ships no package-lock.json,
+          # and setup-node hard-fails when the lock file it expects is absent.
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -69,14 +104,8 @@ jobs:
           distribution: temurin
           java-version: ${{ env.JAVA_VERSION }}
 
-      # FIX: Explicitly specify packages to bypass legacy 'tools' lookup error
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
-        with:
-          packages: 'cmdline-tools;latest platform-tools build-tools;34.0.0 platforms;android-34'
-
-      - name: Accept SDK Licenses
-        run: yes | sdkmanager --licenses || true
 
       - name: Cache Gradle
         uses: actions/cache@v4
@@ -84,7 +113,7 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*') }}
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', 'package-lock.json') }}
           restore-keys: gradle-${{ runner.os }}-
 
       - name: Install dependencies
@@ -101,6 +130,8 @@ jobs:
 
       - name: Generate native icons
         run: |
+          # Cosmetic step: if it ever fails we still ship a working APK with
+          # Capacitor's default launcher icon rather than failing the build.
           npx @capacitor/assets generate --android \
             --iconBackgroundColor '#0A7C5A' --iconBackgroundColorDark '#064A36' \
             --splashBackgroundColor '#0A7C5A' --splashBackgroundColorDark '#064A36' \
@@ -142,9 +173,11 @@ jobs:
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
           set -euo pipefail
+          # Written outside the repo so it can never be committed or cached.
           KEYSTORE="$RUNNER_TEMP/pothik-release.jks"
-          printf '%s' "$KEYSTORE_BASE64" \vert{} base64 -d > "$KEYSTORE"
+          printf '%s' "$KEYSTORE_BASE64" | base64 -d > "$KEYSTORE"
           chmod 600 "$KEYSTORE"
+          # Verify the key really opens before we rely on it.
           keytool -list -keystore "$KEYSTORE" -storepass "$KEYSTORE_PASSWORD" > /dev/null
           echo "Keystore OK ($(wc -c < "$KEYSTORE") bytes), alias $KEY_ALIAS"
           {
@@ -213,6 +246,8 @@ jobs:
           "$BT/apksigner" verify --verbose "$APK"
           echo "Signed and verified."
 
+      # A debug-key build as a guaranteed-installable fallback when there is
+      # no keystore yet. Still shows the unknown-source prompt, but installs.
       - name: Build debug APK (fallback)
         if: steps.signcheck.outputs.enabled != 'true'
         working-directory: android
@@ -221,7 +256,6 @@ jobs:
       # ---------------------------------------------------------------------
       # Collect + name the outputs
       # ---------------------------------------------------------------------
-       monastic:
       - name: Collect artifacts
         id: collect
         run: |
@@ -284,6 +318,10 @@ jobs:
           if-no-files-found: warn
           retention-days: 90
 
+      # ---------------------------------------------------------------------
+      # Attach the files to a GitHub Release: a permanent public download link
+      # you can send to anyone. Disable with repo variable PUBLISH_RELEASE=false
+      # ---------------------------------------------------------------------
       - name: Publish GitHub Release
         if: ${{ vars.PUBLISH_RELEASE != 'false' && steps.collect.outputs.name != '' }}
         uses: softprops/action-gh-release@v2
@@ -294,6 +332,8 @@ jobs:
             Automated build from commit ${{ github.sha }}.
 
             **Install on Android:** download `*-release-signed.apk` below.
+            The first install will ask you to allow "install from unknown
+            sources" - that is normal for any app distributed outside Google Play.
           files: out/*
           make_latest: false
           fail_on_unmatched_files: false
