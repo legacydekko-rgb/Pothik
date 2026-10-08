@@ -1,1 +1,352 @@
+name: Build Android App (APK + AAB)
 
+# ===========================================================================
+#  Pothik — cloud build. You do NOT need Android Studio on your computer.
+#
+#  HOW TO RUN IT
+#    GitHub -> your repository -> "Actions" tab -> "Build Android App"
+#    -> "Run workflow". Wait ~5-10 minutes. The APK appears under
+#    "Artifacts" at the bottom of the run page (and under "Releases").
+#
+#  ---------------------------------------------------------------------------
+#  OPTIONAL SECRETS  (Settings -> Secrets and variables -> Actions)
+#
+#    APP_URL            https://your-live-site.com
+#        Empty  -> the APK BUNDLES the site (works offline, no server).
+#        Set    -> the APK LOADS your live site. Use this once the site is
+#                  published: two phones then share one database, which is
+#                  required for real passenger<->driver matching, and bug
+#                  fixes reach installed users without a new APK.
+#
+#    KEYSTORE_BASE64    the whole .jks file, base64-encoded
+#    KEYSTORE_PASSWORD  the store password you chose
+#    KEY_ALIAS          e.g. pothik
+#    KEY_PASSWORD       the key password you chose
+#        All four present -> a SIGNED release APK is produced (verified with
+#                            `apksigner verify` before it is uploaded).
+#        Any missing      -> an UNSIGNED release APK plus a debug-key APK are
+#                            produced instead. Both still install.
+#
+#    Don't have a keystore yet? Run the companion workflow
+#    "Generate Signing Keystore (run once)" first — it needs no local tools.
+#
+#    A self-signed key proves the app is *consistently from you* and lets it
+#    update over itself without wiping data. It does NOT remove Android's
+#    "install from unknown sources" warning — only Google Play does that.
+# ===========================================================================
+
+on:
+  push:
+    branches: [main, master]
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+  workflow_dispatch:
+    inputs:
+      build_type:
+        description: 'What to build'
+        required: true
+        default: 'both'
+        type: choice
+        options: [both, apk, aab]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '20'
+  JAVA_VERSION: '17'
+
+jobs:
+  # ------------------------------------------------------------------------
+  # 1. Cheap gate: every browser script must COMPILE.
+  #    A single bad line in one .js file can kill an entire screen with no
+  #    build error at all. This 50 ms check prevents shipping that.
+  # ------------------------------------------------------------------------
+  verify:
+    name: Check JavaScript
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+      - name: Compile all app scripts
+        run: node scripts/check-syntax.mjs
+
+  # ------------------------------------------------------------------------
+  # 2. Build the APK / AAB
+  # ------------------------------------------------------------------------
+  android:
+    name: Build Android package
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          # No `cache: npm` on purpose: this repo ships no package-lock.json,
+          # and setup-node hard-fails when the lock file it expects is absent.
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('**/*.gradle*', 'package-lock.json') }}
+          restore-keys: gradle-${{ runner.os }}-
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Generate app icons and splash screens
+        run: npm run icon
+
+      - name: Bundle the website into www/
+        run: npm run www
+
+      - name: Create Android project
+        run: npx cap add android
+
+      - name: Generate native icons
+        run: |
+          # Cosmetic step: if it ever fails we still ship a working APK with
+          # Capacitor's default launcher icon rather than failing the build.
+          npx @capacitor/assets generate --android \
+            --iconBackgroundColor '#0A7C5A' --iconBackgroundColorDark '#064A36' \
+            --splashBackgroundColor '#0A7C5A' --splashBackgroundColorDark '#064A36' \
+            || echo "::warning::Icon generation skipped - using default Capacitor icons."
+
+      - name: Sync web bundle into Android
+        run: npx cap sync android
+
+      - name: Point the app at your live site (only if APP_URL is set)
+        env:
+          APP_URL: ${{ secrets.APP_URL }}
+        run: node scripts/set-app-url.mjs "$APP_URL"
+
+      # ---------------------------------------------------------------------
+      # Signing secrets present?
+      # ---------------------------------------------------------------------
+      - name: Check for signing secrets
+        id: signcheck
+        env:
+          K: ${{ secrets.KEYSTORE_BASE64 }}
+          P: ${{ secrets.KEYSTORE_PASSWORD }}
+          A: ${{ secrets.KEY_ALIAS }}
+          Q: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -n "$K" ] && [ -n "$P" ] && [ -n "$A" ] && [ -n "$Q" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+            echo "Signing secrets found - the release build will be SIGNED and verified."
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Signing secrets are not set. Producing an UNSIGNED release APK plus a debug-key APK. See BUILD-APK-BANGLA.md step 4."
+          fi
+
+      - name: Restore signing key
+        if: steps.signcheck.outputs.enabled == 'true'
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          # Written outside the repo so it can never be committed or cached.
+          KEYSTORE="$RUNNER_TEMP/pothik-release.jks"
+          printf '%s' "$KEYSTORE_BASE64" | base64 -d > "$KEYSTORE"
+          chmod 600 "$KEYSTORE"
+          # Verify the key really opens before we rely on it.
+          keytool -list -keystore "$KEYSTORE" -storepass "$KEYSTORE_PASSWORD" > /dev/null
+          echo "Keystore OK ($(wc -c < "$KEYSTORE") bytes), alias $KEY_ALIAS"
+          {
+            echo "POTHIK_KEYSTORE=$KEYSTORE"
+            echo "POTHIK_KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD"
+            echo "POTHIK_KEY_ALIAS=$KEY_ALIAS"
+            echo "POTHIK_KEY_PASSWORD=$KEY_PASSWORD"
+          } >> "$GITHUB_ENV"
+
+      - name: Locate Android build-tools
+        id: bt
+        run: |
+          BT=$(ls -d "${ANDROID_HOME}"/build-tools/* 2>/dev/null | sort -V | tail -1)
+          if [ -z "$BT" ]; then echo "::error::No Android build-tools found"; exit 1; fi
+          echo "dir=$BT" >> "$GITHUB_OUTPUT"
+          echo "Using build-tools: $BT"
+          ls "$BT" | grep -E '^(apksigner|zipalign)' || true
+
+      # ---------------------------------------------------------------------
+      # Patch the generated project: version, minSdk, permissions, label.
+      # ---------------------------------------------------------------------
+      - name: Patch Android project
+        env:
+          BUILD_NUMBER: ${{ github.run_number }}
+        run: node scripts/patch-android.mjs
+
+      - name: Show the app's manifest permissions
+        run: grep -E 'uses-permission|android:label' android/app/src/main/AndroidManifest.xml || true
+
+      - name: Grant execute permission to gradlew
+        run: chmod +x android/gradlew
+
+      - name: Build release APK (unsigned)
+        if: ${{ github.event.inputs.build_type != 'aab' }}
+        working-directory: android
+        run: ./gradlew assembleRelease --no-daemon --stacktrace
+
+      - name: Build release AAB for Google Play
+        if: ${{ github.event.inputs.build_type != 'apk' }}
+        working-directory: android
+        run: ./gradlew bundleRelease --no-daemon --stacktrace
+
+      # ---------------------------------------------------------------------
+      # Sign the release APK with the Android SDK's own apksigner.
+      # ---------------------------------------------------------------------
+      - name: Sign release APK
+        if: steps.signcheck.outputs.enabled == 'true' && github.event.inputs.build_type != 'aab'
+        run: |
+          set -euo pipefail
+          BT="${{ steps.bt.outputs.dir }}"
+          APK=$(ls android/app/build/outputs/apk/release/*.apk | head -1)
+          echo "Signing $APK"
+          "$BT/zipalign" -f -p 4 "$APK" "$RUNNER_TEMP/aligned.apk"
+          "$BT/apksigner" sign \
+            --ks "$POTHIK_KEYSTORE" \
+            --ks-pass "pass:$POTHIK_KEYSTORE_PASSWORD" \
+            --ks-key-alias "$POTHIK_KEY_ALIAS" \
+            --key-pass "pass:$POTHIK_KEY_PASSWORD" \
+            --v1-signing-enabled true \
+            --v2-signing-enabled true \
+            --v3-signing-enabled true \
+            --out "$RUNNER_TEMP/pothik-signed.apk" \
+            "$RUNNER_TEMP/aligned.apk"
+          cp "$RUNNER_TEMP/pothik-signed.apk" "$APK"
+          echo "--- signature check ---"
+          "$BT/apksigner" verify --verbose "$APK"
+          echo "Signed and verified."
+
+      # A debug-key build as a guaranteed-installable fallback when there is
+      # no keystore yet. Still shows the unknown-source prompt, but installs.
+      - name: Build debug APK (fallback)
+        if: steps.signcheck.outputs.enabled != 'true'
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon
+
+      # ---------------------------------------------------------------------
+      # Collect + name the outputs
+      # ---------------------------------------------------------------------
+      - name: Collect artifacts
+        id: collect
+        run: |
+          set -euo pipefail
+          mkdir -p out
+          SHORT=$(echo "${GITHUB_SHA}" | cut -c1-7)
+          NAME="Pothik-${SHORT}"
+          SUFFIX="unsigned"
+          if [ "${{ steps.signcheck.outputs.enabled }}" = "true" ]; then SUFFIX="signed"; fi
+          found=0
+          for f in android/app/build/outputs/apk/release/*.apk; do
+            [ -e "$f" ] || continue
+            cp "$f" "out/${NAME}-release-${SUFFIX}.apk"; found=1
+          done
+          for f in android/app/build/outputs/apk/debug/*.apk; do
+            [ -e "$f" ] || continue
+            cp "$f" "out/${NAME}-debug.apk"; found=1
+          done
+          for f in android/app/build/outputs/bundle/release/*.aab; do
+            [ -e "$f" ] || continue
+            cp "$f" "out/${NAME}-release.aab"; found=1
+          done
+          echo "name=$NAME" >> "$GITHUB_OUTPUT"
+          ls -lh out
+          if [ "$found" -eq 0 ]; then
+            echo "::error::No APK/AAB was produced - check the Gradle output above."
+            exit 1
+          fi
+
+      - name: Write run summary
+        run: |
+          {
+            echo "## Pothik build complete"
+            echo ""
+            echo "| File | What it is |"
+            echo "|---|---|"
+            echo "| \`*-release-signed.apk\` | **Install this on a phone.** Consistent identity, updates in place. |"
+            echo "| \`*-release-unsigned.apk\` | Only when no keystore secrets are set. Use the debug APK instead. |"
+            echo "| \`*-release.aab\` | Upload this to Google Play Console. |"
+            echo "| \`*-debug.apk\` | Appears only without a keystore. Test builds. |"
+            echo ""
+            echo "Download from the **Artifacts** box below, or from **Releases**."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload APK
+        if: ${{ github.event.inputs.build_type != 'aab' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: Pothik-APK
+          path: out/*.apk
+          if-no-files-found: error
+          retention-days: 90
+
+      - name: Upload AAB
+        if: ${{ github.event.inputs.build_type != 'apk' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: Pothik-AAB-playstore
+          path: out/*.aab
+          if-no-files-found: warn
+          retention-days: 90
+
+      # ---------------------------------------------------------------------
+      # Attach the files to a GitHub Release: a permanent public download link
+      # you can send to anyone. Disable with repo variable PUBLISH_RELEASE=false
+      # ---------------------------------------------------------------------
+      - name: Publish GitHub Release
+        if: ${{ vars.PUBLISH_RELEASE != 'false' && steps.collect.outputs.name != '' }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: Pothik build ${{ github.run_number }}
+          body: |
+            Automated build from commit ${{ github.sha }}.
+
+            **Install on Android:** download `*-release-signed.apk` below.
+            The first install will ask you to allow "install from unknown
+            sources" - that is normal for any app distributed outside Google Play.
+          files: out/*
+          make_latest: false
+          fail_on_unmatched_files: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload Gradle logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gradle-logs
+          path: |
+            android/app/build/reports/**
+            android/build/reports/**
+          retention-days: 7
+          if-no-files-found: ignore
