@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="bn" data-lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0A7C5A">
+<title>পথিক — Pothik · আপনার পথ, আপনার সঙ্গী</title>
+<meta name="description" content="Pothik (পথিক) — ride-sharing platform for Bangladesh. Bike, CNG and car rides with transparent fares, verified drivers and live tracking.">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="images/icon.svg">
+<link rel="apple-touch-icon" href="images/icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<div class="app-shell">
+  <header class="app-header">
+    <span class="brand-mark" aria-hidden="true">প</span>
+    <h1 class="grow" style="margin:0">পথিক <span style="font-weight:400;font-size:13px;color:var(--muted)">Pothik</span></h1>
+    <div class="row gap-2">
+      <button class="btn btn-ghost btn-sm" id="lang-toggle" aria-label="Change language">
+        <i class="fa-solid fa-language"></i><span>EN</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="app-main" id="main">
+    <!-- Hero -->
+    <section id="hero-section" class="card" style="background:linear-gradient(150deg,var(--brand-600),var(--brand-800));color:#fff;border:0;padding:var(--s6) var(--s5)">
+      <span class="badge" style="background:rgba(255,255,255,.18);color:#fff">
+        <i class="fa-solid fa-flag"></i> Bangladesh
+      </span>
+      <h1 style="margin:var(--s4) 0 var(--s2);font-size:var(--fs-3xl);color:#fff" data-i18n="app.name">পথিক</h1>
+      <p style="color:rgba(255,255,255,.9);font-size:var(--fs-lg);margin-bottom:var(--s5)" data-i18n="app.tagline">আপনার পথ, আপনার সঙ্গী</p>
+
+      <div class="row gap-2 wrap" style="margin-bottom:var(--s5)">
+        <span class="badge" style="background:rgba(255,255,255,.16);color:#fff"><i class="fa-solid fa-motorcycle"></i><span data-i18n="veh.bike">বাইক</span></span>
+        <span class="badge" style="background:rgba(255,255,255,.16);color:#fff"><i class="fa-solid fa-taxi"></i><span data-i18n="veh.cng">সিএনজি</span></span>
+        <span class="badge" style="background:rgba(255,255,255,.16);color:#fff"><i class="fa-solid fa-car-side"></i><span data-i18n="veh.car">কার</span></span>
+      </div>
+
+      <p style="color:rgba(255,255,255,.8);font-size:13px;margin:0">
+        <i class="fa-solid fa-phone"></i> +880 1624-7 &nbsp;·&nbsp; <span data-i18n="admin.supportHotline">16247</span>
+      </p>
+    </section>
+
+    <!-- Role selection -->
+    <section id="role-section" class="mt-6">
+      <h2 data-i18n="landing.chooseRole">আপনি কে?</h2>
+
+      <div class="col gap-3">
+        <button class="card row gap-4" id="role-passenger" style="text-align:left;cursor:pointer;border:1.5px solid var(--border);width:100%">
+          <span class="kpi-icon" style="width:52px;height:52px;font-size:21px;background:var(--brand-50);color:var(--brand-600)">
+            <i class="fa-solid fa-person"></i>
+          </span>
+          <span class="grow">
+            <strong style="display:block;font-size:var(--fs-lg)" data-i18n="app.role.passenger">যাত্রী</strong>
+            <span style="color:var(--muted);font-size:13px" data-i18n="landing.passenger.desc">রাইড বুক করুন, চালক ট্র্যাক করুন</span>
+          </span>
+          <i class="fa-solid fa-chevron-right" style="color:var(--muted-2)"></i>
+        </button>
+
+        <button class="card row gap-4" id="role-driver" style="text-align:left;cursor:pointer;border:1.5px solid var(--border);width:100%">
+          <span class="kpi-icon" style="width:52px;height:52px;font-size:21px;background:rgba(245,165,36,.14);color:#9A6100">
+            <i class="fa-solid fa-id-card"></i>
+          </span>
+          <span class="grow">
+            <strong style="display:block;font-size:var(--fs-lg)" data-i18n="app.role.driver">চালক</strong>
+            <span style="color:var(--muted);font-size:13px" data-i18n="landing.driver.desc">অনলাইন হয়ে রাইড গ্রহণ করুন, আয় করুন</span>
+          </span>
+          <i class="fa-solid fa-chevron-right" style="color:var(--muted-2)"></i>
+        </button>
+
+        <button class="card row gap-4" id="role-admin" style="text-align:left;cursor:pointer;border:1.5px solid var(--border);width:100%">
+          <span class="kpi-icon" style="width:52px;height:52px;font-size:21px;background:rgba(43,127,255,.12);color:#1B5FC4">
+            <i class="fa-solid fa-gauge-high"></i>
+          </span>
+          <span class="grow">
+            <strong style="display:block;font-size:var(--fs-lg)" data-i18n="app.role.admin">প্রশাসক</strong>
+            <span style="color:var(--muted);font-size:13px" data-i18n="landing.admin.desc">প্ল্যাটফর্ম পরিচালনা ও নিরীক্ষণ</span>
+          </span>
+          <i class="fa-solid fa-chevron-right" style="color:var(--muted-2)"></i>
+        </button>
+      </div>
+    </section>
+
+    <!-- Features -->
+    <section id="features-section" class="mt-6">
+      <h2 data-i18n="landing.features">কেন পথিক?</h2>
+      <div class="col gap-3">
+        <article class="card row gap-3">
+          <span class="kpi-icon"><i class="fa-solid fa-bolt"></i></span>
+          <div>
+            <strong data-i18n="landing.f1.title">দ্রুততম ম্যাচিং</strong>
+            <p style="margin:2px 0 0;color:var(--muted);font-size:13px" data-i18n="landing.f1.desc">আপনার কাছের চালককেই প্রথমে রাইড রিকোয়েস্ট পাঠানো হয়।</p>
+          </div>
+        </article>
+        <article class="card row gap-3">
+          <span class="kpi-icon"><i class="fa-solid fa-receipt"></i></span>
+          <div>
+            <strong data-i18n="landing.f2.title">স্বচ্ছ ভাড়া</strong>
+            <p style="margin:2px 0 0;color:var(--muted);font-size:13px" data-i18n="landing.f2.desc">যাত্রার আগেই আনুমানিক ভাড়া দেখুন। কোনো লুকানো চার্জ নেই।</p>
+          </div>
+        </article>
+        <article class="card row gap-3">
+          <span class="kpi-icon"><i class="fa-solid fa-shield-halved"></i></span>
+          <div>
+            <strong data-i18n="landing.f3.title">নিরাপত্তা</strong>
+            <p style="margin:2px 0 0;color:var(--muted);font-size:13px" data-i18n="landing.f3.desc">যাচাইকৃত চালক, লাইভ ট্র্যাকিং ও জরুরি সহায়তা।</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- Demo credentials -->
+    <section class="mt-6">
+      <div class="alert alert-info">
+        <i class="fa-solid fa-circle-info"></i>
+        <div>
+          <strong>Demo accounts</strong>
+          <div style="margin-top:4px;font-family:var(--font-mono);font-size:12px;line-height:1.7">
+            Passenger: 1711100001 / passenger123<br>
+            Driver: 1712000001 / driver123<br>
+            Admin: 1700000001 / admin1234
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mt-6">
+      <div class="row gap-3 wrap" style="justify-content:center">
+        <a class="btn btn-ghost btn-sm" href="docs/ARCHITECTURE.md"><i class="fa-solid fa-book"></i> Docs</a>
+        <a class="btn btn-ghost btn-sm" href="terms.html"><i class="fa-solid fa-file-contract"></i> Terms</a>
+        <a class="btn btn-ghost btn-sm" href="privacy.html"><i class="fa-solid fa-user-shield"></i> Privacy</a>
+      </div>
+      <p class="center mt-4" style="color:var(--muted);font-size:12px">
+        পথিক v1.0.0 · Built for Bangladesh · ৳ BDT
+      </p>
+    </section>
+  </main>
+</div>
+
+<script src="js/core/i18n.js"></script>
+<script src="js/core/store.js"></script>
+<script src="js/core/db.js"></script>
+<script src="js/core/geo.js"></script>
+<script src="js/core/settings.js"></script>
+<script src="js/core/fare.js"></script>
+<script src="js/core/ride-state.js"></script>
+<script src="js/core/matching.js"></script>
+<script src="js/core/auth.js"></script>
+<script src="js/core/notify.js"></script>
+<script src="js/core/ui.js"></script>
+<script src="js/core/seed.js"></script>
+<script src="js/app/shell.js"></script>
+<script src="js/pages/landing.js"></script>
+</body>
+</html>

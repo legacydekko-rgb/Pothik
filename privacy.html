@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="bn" data-lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0A7C5A">
+<title>গোপনীয়তা নীতি · পথিক</title>
+<link rel="icon" href="images/icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<a class="skip-link" href="#doc-main">Skip to content</a>
+
+<header class="app-header" style="position:sticky;top:0">
+  <a class="btn btn-ghost btn-icon btn-sm" href="index.html" aria-label="Back to home">
+    <i class="fa-solid fa-arrow-left"></i>
+  </a>
+  <h1 class="grow" style="font-size:16px">গোপনীয়তা নীতি · Privacy Policy</h1>
+  <button class="btn btn-ghost btn-sm" id="lang-toggle"><i class="fa-solid fa-language"></i><span>EN</span></button>
+</header>
+
+<main class="app-main" id="doc-main" style="max-width:820px">
+
+  <div class="alert alert-info mb-4">
+    <i class="fa-solid fa-circle-info"></i>
+    <div style="font-size:13px">
+      <strong>এই নীতিটি আপনার অ্যাপটি আসলে যা করে তা-ই বর্ণনা করে</strong> —
+      কোনো সাধারণ টেমপ্লেট নয়। আমরা কোথায় ডেটা রাখি, কতক্ষণ রাখি এবং কে দেখতে
+      পারে তা স্পষ্ট করে লিখেছি।
+    </div>
+  </div>
+
+  <p class="mb-4" style="color:var(--muted);font-size:13px">
+    সর্বশেষ হালনাগাদ: <strong id="doc-updated">—</strong> · সংস্করণ 1.0
+  </p>
+
+  <section class="card mb-4">
+    <h2 style="font-size:17px">১. আমরা কী তথ্য সংগ্রহ করি</h2>
+    <ul>
+      <li><strong>পরিচয়:</strong> পূর্ণ নাম, মোবাইল নম্বর, ইমেইল (ঐচ্ছিক), ভাষা পছন্দ।</li>
+      <li><strong>অবস্থান (GPS):</strong> আপনার সম্মতি দিলে সঠিক অবস্থান। যাত্রী অ্যাপ
+        পিকআপ বিন্দু ও লাইভ ট্রিপের জন্য এটি ব্যবহার করে। চালক অ্যাপ অনলাইন থাকা
+        অবস্থায় নিয়মিত অবস্থান পাঠায় (প্রতি ~৯ সেকেন্ডে) — এটি ছাড়া ম্যাচিং সম্ভব নয়।</li>
+      <li><strong>চালকের নথি:</strong> NID, ড্রাইভিং লাইসেন্স, যানবাহনের
+        কাগজপত্র ও ছবি — শুধুমাত্র প্রশাসনিক যাচাইয়ের জন্য।</li>
+      <li><strong>রাইড ডেটা:</strong> পিকআপ/গন্তব্যের নাম ও স্থানাঙ্ক, দূরত্ব, সময়,
+        ভাড়ার হিসাব, রাইডের অবস্থা।</li>
+      <li><strong>পেমেন্ট রেকর্ড:</strong> পদ্ধতি, পরিমাণ, লেনদেন রেফারেন্স।
+        <em>আমরা কার্ড নম্বর বা bKash পিন কখনোই সংরক্ষণ করি না।</em></li>
+      <li><strong>মতামত:</strong> রেটিং, মন্তব্য, সাপোর্ট টিকিট।</li>
+      <li><strong>নিরাপত্তা:</strong> জরুরি (SOS) ঘটনার সময় ও অবস্থান।</li>
+    </ul>
+  </section>
+
+  <section class="card mb-4">
+    <h2 style="font-size:17px">২. ডেটা কোথায় রাখা হয়</h2>
+    <div class="alert alert-warn" style="text-align:left;margin:0 0 12px">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      <div style="font-size:12px">
+        <strong>এই সংস্করণটি একটি প্রোটোটাইপ।</strong> অ্যাকাউন্ট, রাইড, নোটিফিকেশন —
+        সব ডেটা রাখা হয় প্ল্যাটফর্মের সারণি API-তে (হোস্ট করা ডেটাবেস), ঠিক যেমন
+        নামানো হয়েছিল। কোনো তৃতীয় পক্ষের বিশ্লেষণ (analytics), বিজ্ঞাপন SDK বা
+        ট্র্যাকিং স্ক্রিপ্ট এই অ্যাপে নেই।
+      </div>
+    </div>
+    <table class="data">
+      <thead><tr><th>যা ফোনে রাখা হয়</th><th>কেন</th></tr></thead>
+      <tbody>
+        <tr><td>লগইন টোকেন / সেশন</td><td>বারবার লগইন এড়াতে (৩০ দিন)</td></tr>
+        <tr><td>ব্যবহারকারীর পছন্দ (ভাষা, থিম, শব্দ)</td><td>সেটিংস মনে রাখতে</td></tr>
+        <tr><td>নেটওয়ার্ক না থাকলে অপেক্ষমাণ লেখা</td><td>অফলাইনে রাইড নষ্ট না করতে</td></tr>
+      </tbody>
+    </table>
+    <p class="mt-3" style="font-size:13px">এই ডেটা ব্রাউজারের/অ্যাপের নিজস্ব স্টোরেজে
+    থাকে এবং লগআউট করলে তা মুছে ফেলা যায়।</p>
+  </section>
+
+  <section class="card mb-4">
+    <h2 style="font-size:17px">৩. কার সাথে শেয়ার করা হয়</h2>
+    <ul>
+      <li><strong>রাইডের দুই পক্ষ:</strong> চালক আপনার নাম, পিকআপ বিন্দু ও ফোন নম্বর
+        দেখেন; আপনি চালকের নাম, রেটিং, যানবাহনের নম্বর ও ফোন দেখেন। প্রয়োজন
+        সীমিত — এটুকুই।</li>
+      <li><strong>মানচিত্র সেবা:</strong> বিন্দু ও অনুসন্ধান ক্ষেত্রে অবস্থান পাঠানো হয়
+        OpenStreetMap Nominatim (নাম থেকে স্থান) এবং OSRM (রাস্তার পথ) — এগুলো
+        মুক্ত ও খোলা সেবা। Google Maps ব্যবহার করা হয়নি, তাই Google-কে কোনো
+        অবস্থান পাঠানো হয় না।</li>
+      <li><strong>পেমেন্ট গেটওয়ে (ভবিষ্যতে):</strong> bKash/Nagad/কার্ড সংযুক্ত হলে
+        শুধু সেই লেনদেনের জন্য প্রয়োজনীয় তথ্য পাঠানো হবে।</li>
+      <li><strong>আইনি বাধ্যবাধকতা:</strong> আদালতের আদেশ বা আইন প্রয়োগকারী সংস্থার
+        বৈধ অনুরোধে।</li>
+    </ul>
+  </section>
+
+  <section class="card mb-4">
+    <h2 style="font-size:17px">৪. নিরাপত্তা</h2>
+    <ul>
+      <li>পাসওয়ার্ড সংরক্ষণ করা হয় PBKDF2-SHA256 (১,৫০,০০০ পুনরাবৃত্তি, প্রতিটি
+        অ্যাকাউন্টের জন্য আলাদা র্যান্ডম সল্ট) দিয়ে — কখনোই সাধারণ লেখায় নয়।</li>
+      <li>ওটিপি যাচাই ছাড়া ফোন নম্বর নিশ্চিত হয় না।</li>
+      <li>অনবরত অনুরোধ (rate-limit), রোল-ভিত্তিক প্রবেশাধিকার (RBAC), প্রতিটি
+        গুরুত্বপূর্ণ কাজের নিরীক্ষা লগ (audit log)।</li>
+      <li><strong>সীমাবদ্ধতা সৎভাবে জানানো:</strong> এই প্রোটোটাইপে যাচাই ও অনুমতি
+        কিছুটা ক্লায়েন্টে (ব্রাউজারে) সম্পন্ন হয়। ব্রাউজারের কোড যেকেউ পড়তে পারে,
+        তাই ক্লায়েন্ট-ভিত্তিক নিয়ন্ত্রণ কোনোদিনই সার্ভার-স্তরের নিরাপত্তার বিকল্প নয়।
+        আসল বাজারে ছাড়ার আগে অবশ্যই সার্ভার-সাইড API, সেশন যাচাই ও সাইন করা
+        গোপন কী (JWT) ব্যবহার করতে হবে।</li>
+    </ul>
+  </section>
+
+  <section class="card mb-4">
+    <h2 style="font-size:17px">৫. আপনি যা নিয়ন্ত্রণ করেন</h2>
+    <ul>
+      <li><strong>লোকেশন:</strong> ফোনের অনুমতি থেকে যেকোনো সময় বন্ধ করতে পারেন
+        (তবে ম্যাচিং কাজ করবে না)।</li>
+      <li><strong>নোটিফিকেশন:</strong> সেটিংস → পুশ নোটিফিকেশন বন্ধ।</li>
+      <li><strong>প্রোফাইল:</strong> নাম, ইমেইল, জরুরি যোগাযোগ সম্পাদনা।</li>
+      <li><strong>অ্যাকাউন্ট মুছে ফেলা:</strong> সাপোর্ট টিকিটের মাধ্যমে অনুরোধ
+        করুন — সক্রিয় রাইড/অমীমাংসিত পেমেন্ট থাকলে আগে নিষ্পত্তি করতে হবে।</li>
+    </ul>
+  </section>
+
+  <section class="card mb-4">
+    <h2 style="font-size:17px">৬. শিশুদের বিষয়ে</h2>
+    <p>সেবাটি ১৮ বছরের নিচের ব্যক্তিদের জন্য নয়। আমরা জেনেশুনে শিশুর কাছ থেকে
+    তথ্য সংগ্রহ করি না।</p>
+  </section>
+
+  <section class="card mb-4">
+    <h2 style="font-size:17px">৭. পরিবর্তন</h2>
+    <p>উল্লেখযোগ্য পরিবর্তন হলে অ্যাপে নোটিফিকেশন দেওয়া হবে এবং উপরের তারিখ
+    হালনাগাদ করা হবে।</p>
+  </section>
+
+  <div class="card mb-4">
+    <h2 style="font-size:17px">যোগাযোগ · ডেটা অনুরোধ</h2>
+    <ul class="list">
+      <li class="list-item"><span class="li-main"><span class="li-title">ইমেইল</span></span><strong>support@pothik.com.bd</strong></li>
+      <li class="list-item"><span class="li-main"><span class="li-title">হটলাইন</span></span><strong>16247</strong></li>
+      <li class="list-item"><span class="li-main"><span class="li-title">জরুরি (জাতীয়)</span></span><strong>999</strong></li>
+    </ul>
+  </div>
+
+  <div class="row gap-3 mb-4">
+    <a class="btn btn-ghost grow" href="terms.html"><i class="fa-solid fa-file-contract"></i> শর্তাবলী</a>
+    <a class="btn btn-primary grow" href="index.html"><i class="fa-solid fa-house"></i> হোমে ফিরুন</a>
+  </div>
+</main>
+
+<footer style="text-align:center;padding:24px 16px 40px;color:var(--muted-2);font-size:12px">
+  <strong>পথিক</strong> · Pothik · Bangladesh 🇧🇩
+</footer>
+
+<script src="js/core/i18n.js"></script>
+<script src="js/core/store.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+    var el = document.getElementById('doc-updated');
+    function stamp() {
+      el.textContent = I18n.getLang() === 'bn' ? '৭ অক্টোবর ২০২৬' : '7 October 2026';
+    }
+    stamp();
+    document.getElementById('lang-toggle').addEventListener('click', function () {
+      var next = I18n.getLang() === 'bn' ? 'en' : 'bn';
+      I18n.setLang(next);
+      this.querySelector('span').textContent = next === 'bn' ? 'EN' : 'বাং';
+      stamp();
+    });
+  });
+</script>
+</body>
+</html>

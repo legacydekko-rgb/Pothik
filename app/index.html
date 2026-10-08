@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="bn" data-lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0A7C5A">
+<title>পথিক · যাত্রী</title>
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" href="../images/icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="../css/tokens.css">
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/components.css">
+<link rel="stylesheet" href="../css/app.css">
+</head>
+<body>
+<a class="skip-link" href="#app-main">Skip to content</a>
+
+<div class="app-shell">
+  <header class="app-header" id="app-header">
+    <span class="brand-mark" aria-hidden="true">প</span>
+    <h1 class="grow" id="header-title">পথিক</h1>
+    <button class="btn btn-ghost btn-sm" id="lang-toggle" aria-label="Change language">
+      <i class="fa-solid fa-language"></i><span>EN</span>
+    </button>
+  </header>
+
+  <main class="app-main app-main-flush" id="app-main">
+
+    <!-- ================================ HOME ================================ -->
+    <section id="scr-home">
+      <div class="home-wrap" style="position:relative;height:calc(100dvh - 132px);min-height:460px">
+        <div id="map-home" class="map-canvas map-full" role="img" aria-label="Map"></div>
+
+        <div class="map-overlay-top">
+          <div class="search-row" id="home-search" role="button" tabindex="0">
+            <i class="fa-solid fa-magnifying-glass sr-icon"></i>
+            <span class="sr-text grow" data-i18n="home.whereTo">আপনি কোথায় যাবেন?</span>
+            <i class="fa-solid fa-chevron-right" style="color:var(--muted-2)"></i>
+          </div>
+        </div>
+
+        <button class="map-fab" id="home-locate" aria-label="Recenter on my location" title="My location">
+          <i class="fa-solid fa-location-crosshairs"></i>
+        </button>
+
+        <div class="map-overlay-bottom">
+          <div class="card" style="box-shadow:var(--sh-3)">
+            <div class="row-between mb-3">
+              <div class="row gap-2">
+                <span class="dot dot-live" id="gps-dot"></span>
+                <strong style="font-size:13px" id="gps-text" data-i18n="home.locating">অবস্থান নির্ণয় হচ্ছে…</strong>
+              </div>
+              <span id="conn-pill"></span>
+            </div>
+
+            <div class="row-between">
+              <div>
+                <div style="font-size:12px;color:var(--muted)" data-i18n="home.nearbyDrivers">কাছাকাছি চালক</div>
+                <div class="row gap-2 mt-2" id="nearby-drivers">
+                  <span class="skeleton" style="width:96px;height:24px;display:inline-block"></span>
+                </div>
+              </div>
+              <button class="btn btn-primary" id="home-book" data-i18n="home.whereTo">আপনি কোথায় যাবেন?</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== WHERE TO ============================== -->
+    <section id="scr-whereto" class="screen hidden">
+      <div class="card mb-4">
+        <div class="route-summary">
+          <div class="rs-rail">
+            <span class="rs-dot" style="border-color:var(--brand-500);background:var(--brand-500)"></span>
+            <span class="rs-line"></span>
+            <span class="rs-dot" style="border-color:var(--accent-500);background:var(--accent-500)"></span>
+          </div>
+          <div class="grow col gap-3">
+            <button class="search-row" id="input-pickup" style="box-shadow:none">
+              <i class="fa-solid fa-circle-dot sr-icon"></i>
+              <span class="sr-text grow" id="pickup-text" data-i18n="home.currentLocation">আমার বর্তমান অবস্থান</span>
+              <i class="fa-solid fa-chevron-right" style="color:var(--muted-2)"></i>
+            </button>
+            <button class="search-row" id="input-dropoff" style="box-shadow:none">
+              <i class="fa-solid fa-location-dot sr-icon" style="color:var(--accent-500)"></i>
+              <span class="sr-text grow" data-i18n="home.setDropoff">গন্তব্য নির্ধারণ করুন</span>
+              <i class="fa-solid fa-chevron-right" style="color:var(--muted-2)"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <h3 data-i18n="home.savedPlaces">সংরক্ষিত স্থান</h3>
+      <div class="card card-flush mb-4"><ul class="list" id="saved-places"></ul></div>
+
+      <h3 data-i18n="home.recent">সাম্প্রতিক</h3>
+      <div class="card card-flush"><ul class="list" id="recent-places"></ul></div>
+    </section>
+
+    <!-- ============================ PLACE SEARCH ============================ -->
+    <section id="scr-placesearch" class="screen hidden">
+      <div class="input-group mb-4">
+        <i class="fa-solid fa-magnifying-glass ig-icon"></i>
+        <input class="input" id="place-query" type="search" autocomplete="off"
+               data-i18n-ph="home.searchPlace" placeholder="জায়গা খুঁজুন">
+      </div>
+      <div class="card card-flush">
+        <ul class="list" id="place-results"></ul>
+      </div>
+      <p class="mt-4 center" style="font-size:12px;color:var(--muted-2)">
+        <i class="fa-solid fa-database"></i> OpenStreetMap Nominatim · Bangladesh
+      </p>
+    </section>
+
+    <!-- ============================== PIN PICK ============================== -->
+    <section id="scr-pinpick" class="screen hidden">
+      <div style="position:relative;height:calc(100dvh - 132px);min-height:420px">
+        <div id="map-pin" class="map-canvas map-full"></div>
+        <div class="center-pin" aria-hidden="true"><i class="fa-solid fa-location-dot"></i></div>
+        <div class="map-overlay-top">
+          <div class="card" style="box-shadow:var(--sh-3)">
+            <div class="row gap-2" style="font-size:13px;color:var(--muted)">
+              <i class="fa-solid fa-hand-pointer"></i>
+              <span data-i18n="home.dragPin">মানচিত্র সরিয়ে সঠিক স্থান বেছে নিন</span>
+            </div>
+            <strong id="pin-label" style="display:block;margin-top:6px">—</strong>
+          </div>
+        </div>
+        <div class="map-overlay-bottom">
+          <button class="btn btn-primary btn-block btn-lg" id="pin-confirm" data-i18n="home.confirmPickup">এই স্থান নিশ্চিত করুন</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== VEHICLES ============================== -->
+    <section id="scr-vehicles" class="screen hidden">
+      <div style="position:relative;height:calc(100dvh - 132px);min-height:460px">
+        <div id="map-veh" class="map-canvas map-full"></div>
+        <div class="map-overlay-top">
+          <div class="card" style="box-shadow:var(--sh-3);padding:10px 14px">
+            <div class="row gap-3" style="font-size:13px">
+              <span><i class="fa-solid fa-route" style="color:var(--brand-500)"></i> <strong id="veh-km">—</strong></span>
+              <span><i class="fa-solid fa-clock" style="color:var(--brand-500)"></i> <strong id="veh-min">—</strong></span>
+              <span id="veh-source" style="color:var(--muted);font-size:11px"></span>
+            </div>
+          </div>
+        </div>
+        <div class="map-overlay-bottom">
+          <div class="card" style="box-shadow:var(--sh-3)">
+            <h3 style="font-size:15px;margin-bottom:10px" data-i18n="home.selectVehicle">যানবাহন নির্বাচন করুন</h3>
+            <div class="col gap-2" id="veh-list" role="radiogroup"></div>
+            <div class="row-between mt-4" style="border-top:1px solid var(--border);padding-top:12px">
+              <div>
+                <div style="font-size:11px;color:var(--muted)" data-i18n="home.estimate">ভাড়ার অনুমান</div>
+                <div style="font-size:24px;font-weight:800" id="veh-fare">—</div>
+              </div>
+              <button class="btn btn-primary btn-lg" id="veh-request" data-i18n="home.requestRide">রাইড অনুরোধ করুন</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================= SEARCHING ============================= -->
+    <section id="scr-searching" class="screen hidden">
+      <div class="card center">
+        <div class="radar" aria-hidden="true">
+          <span class="rd-ring"></span><span class="rd-ring"></span><span class="rd-ring"></span>
+          <span class="rd-core"><i class="fa-solid fa-car-side"></i></span>
+        </div>
+        <h2 data-i18n="ride.searching">চালক খোঁজা হচ্ছে…</h2>
+        <p style="color:var(--muted);font-size:13px" data-i18n="ride.searchingSub">কাছাকাছি উপলব্ধ চালকদের অনুরোধ পাঠানো হচ্ছে</p>
+        <div class="mt-4" style="font-size:13px">
+          <div id="search-candidate" style="font-weight:600">—</div>
+          <div id="search-timer" style="color:var(--muted);font-family:var(--font-mono)"></div>
+        </div>
+        <div class="progress mt-4"><span id="search-bar" style="width:0%"></span></div>
+        <div id="search-demo-note" class="alert alert-warn mt-4" style="text-align:left;display:none">
+          <i class="fa-solid fa-flask"></i>
+          <div style="font-size:12px"><strong>Demo auto-accept ON</strong><br>If a real driver does not respond, the platform simulates an acceptance so the flow can be demonstrated end-to-end.</div>
+        </div>
+        <button class="btn btn-ghost btn-block mt-4" id="search-cancel" data-i18n="ride.cancel">রাইড বাতিল</button>
+      </div>
+    </section>
+
+    <!-- ================================ TRIP ================================ -->
+    <section id="scr-trip" class="screen hidden">
+      <div style="position:relative;height:calc(100dvh - 132px);min-height:460px">
+        <div id="map-trip" class="map-canvas map-full"></div>
+        <div class="map-overlay-bottom" style="bottom:12px">
+          <div class="card" style="box-shadow:var(--sh-3);max-height:56vh;overflow-y:auto">
+            <div class="row-between mb-3">
+              <span id="trip-status-badge"></span>
+              <button class="btn btn-ghost btn-sm" id="trip-details-toggle"><i class="fa-solid fa-chevron-up"></i></button>
+            </div>
+
+            <div class="trip-rail" id="trip-rail"></div>
+
+            <div class="driver-card mb-3">
+              <span id="trip-driver-avatar"></span>
+              <div class="grow">
+                <strong id="trip-driver-name" style="display:block">—</strong>
+                <span style="font-size:12px;color:var(--muted)" id="trip-driver-meta">—</span>
+              </div>
+              <div class="col gap-2">
+                <button class="btn btn-soft btn-icon btn-sm" id="trip-call" data-i18n-title="ride.call" aria-label="Call"><i class="fa-solid fa-phone"></i></button>
+                <button class="btn btn-soft btn-icon btn-sm" id="trip-msg" data-i18n-title="ride.message" aria-label="Message"><i class="fa-solid fa-comment"></i></button>
+              </div>
+            </div>
+
+            <div id="trip-pin-box" class="hidden">
+              <div class="center" style="font-size:12px;color:var(--muted)" data-i18n="ride.otpShare">এই পিন চালককে বলুন</div>
+              <div class="pin-display" id="trip-pin"></div>
+            </div>
+
+            <div id="trip-eta-row" class="row-between" style="font-size:13px">
+              <span><i class="fa-solid fa-clock" style="color:var(--brand-500)"></i> <span data-i18n="ride.eta">পৌঁছানোর সময়</span>: <strong id="trip-eta">—</strong></span>
+              <span><i class="fa-solid fa-route" style="color:var(--brand-500)"></i> <strong id="trip-km">—</strong></span>
+            </div>
+
+            <div class="row gap-2 mt-4">
+              <button class="sos-btn" id="trip-sos" aria-label="Emergency">SOS</button>
+              <button class="btn btn-ghost grow" id="trip-share"><i class="fa-solid fa-share-nodes"></i><span data-i18n="ride.share">ট্রিপ শেয়ার</span></button>
+              <button class="btn btn-ghost grow" id="trip-cancel"><i class="fa-solid fa-xmark"></i><span data-i18n="ride.cancel">বাতিল</span></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== PAYMENT =============================== -->
+    <section id="scr-payment" class="screen hidden">
+      <div class="center mb-4">
+        <span class="kpi-icon" style="width:72px;height:72px;font-size:30px;margin:0 auto 12px;background:var(--brand-50);color:var(--brand-600)">
+          <i class="fa-solid fa-receipt"></i>
+        </span>
+        <h1 data-i18n="pay.title">পেমেন্ট</h1>
+        <p style="color:var(--muted)" data-i18n="ride.completed">যাত্রা সম্পন্ন</p>
+      </div>
+
+      <div class="card mb-4">
+        <h3 style="font-size:15px" data-i18n="pay.breakdown">ভাড়ার হিসাব</h3>
+        <ul class="list" id="pay-breakdown"></ul>
+        <div class="row-between" style="border-top:1px solid var(--border);padding-top:12px;margin-top:8px">
+          <strong data-i18n="pay.total">সর্বমোট</strong>
+          <strong style="font-size:22px" id="pay-total">—</strong>
+        </div>
+      </div>
+
+      <div class="card mb-4">
+        <h3 style="font-size:15px" data-i18n="pay.method">পেমেন্ট পদ্ধতি</h3>
+        <div class="col gap-2" id="pay-methods"></div>
+        <div class="alert alert-info mt-4" id="pay-gateway-note">
+          <i class="fa-solid fa-circle-info"></i>
+          <span style="font-size:12px" data-i18n="pay.onlineSoon">অনলাইন পেমেন্ট গেটওয়ে সংযুক্ত হচ্ছে। এই মুহূর্তে নগদ ব্যবহার করুন।</span>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-block btn-lg" id="pay-confirm" data-i18n="pay.payNow">এখনই পরিশোধ করুন</button>
+    </section>
+
+    <!-- =============================== RATE ================================= -->
+    <section id="scr-rate" class="screen hidden">
+      <div class="center mb-4">
+        <span id="rate-avatar" style="display:inline-block"></span>
+        <h1 class="mt-3" data-i18n="rate.title">যাত্রা কেমন ছিল?</h1>
+        <p style="color:var(--muted)" id="rate-sub" data-i18n="rate.driverSub">আপনার চালককে রেটিং দিন</p>
+      </div>
+
+      <div class="card">
+        <div class="center" id="rate-stars-host"></div>
+        <div class="field mt-4">
+          <label for="rate-comment" data-i18n="rate.comment">মন্তব্য লিখুন (ঐচ্ছিক)</label>
+          <textarea class="textarea" id="rate-comment" data-i18n-ph="rate.commentPh" placeholder="আপনার অভিজ্ঞতা শেয়ার করুন…"></textarea>
+        </div>
+        <button class="btn btn-primary btn-block btn-lg" id="rate-submit" data-i18n="rate.submit">রেটিং জমা দিন</button>
+        <button class="btn btn-ghost btn-block mt-2" id="rate-skip" data-i18n="rate.skip">এখনই নয়</button>
+      </div>
+    </section>
+
+    <!-- ============================== HISTORY =============================== -->
+    <section id="scr-history" class="screen hidden">
+      <div class="segmented mb-4" id="history-filter" role="tablist">
+        <button role="tab" aria-selected="true" data-filter="all" data-i18n="common.all">সব</button>
+        <button role="tab" aria-selected="false" data-filter="completed" data-i18n="st.RIDE_COMPLETED">সম্পন্ন</button>
+        <button role="tab" aria-selected="false" data-filter="cancelled" data-i18n="ride.cancelled">বাতিল</button>
+      </div>
+      <div id="history-list"></div>
+    </section>
+
+    <!-- ============================ RIDE DETAIL ============================= -->
+    <section id="scr-ridedetail" class="screen hidden">
+      <div id="rd-body"></div>
+    </section>
+
+    <!-- ============================== PROFILE =============================== -->
+    <section id="scr-profile" class="screen hidden">
+      <div class="card center mb-4">
+        <span id="profile-avatar" style="display:inline-block"></span>
+        <h2 class="mt-3" id="profile-name">—</h2>
+        <p style="color:var(--muted)" id="profile-phone">—</p>
+        <div class="row gap-2" style="justify-content:center">
+          <span class="badge badge-brand" id="profile-rating"><i class="fa-solid fa-star"></i> —</span>
+          <span class="badge badge-neutral" id="profile-rides">—</span>
+        </div>
+      </div>
+
+      <div class="grid-2 mb-4" style="grid-template-columns:1fr 1fr">
+        <div class="kpi">
+          <span class="kpi-label" data-i18n="prof.totalRides">মোট রাইড</span>
+          <span class="kpi-value" id="stat-rides">0</span>
+        </div>
+        <div class="kpi">
+          <span class="kpi-label" data-i18n="wallet.balance">ব্যালেন্স</span>
+          <span class="kpi-value" id="stat-balance">৳0</span>
+        </div>
+      </div>
+
+      <div class="card card-flush mb-4">
+        <ul class="list">
+          <li class="list-item interactive" data-go="wallet">
+            <span class="kpi-icon"><i class="fa-solid fa-wallet"></i></span>
+            <span class="li-main"><span class="li-title" data-i18n="wallet.title">ওয়ালেট</span></span>
+            <i class="fa-solid fa-chevron-right" style="color:var(--muted-2)"></i>
+          </li>
+          <li class="list-item interactive" data-go="notifications">
+            <span class="kpi-icon"><i class="fa-solid fa-bell"></i></span>
+            <span class="li-main"><span class="li-title" data-i18n="notif.title">নোটিফিকেশন</span></span>
+            <i class="fa-solid fa-chevron-right" style="color:var(--muted-2)"></i>
+          </li>
+          <li class="list-item interactive" data-go="support">
+            <span class="kpi-icon"><i class="fa-solid fa-headset"></i></span>
+            <span class="li-main"><span class="li-title" data-i18n="sup.title">সহায়তা</span></span>
+            <i class="fa-solid fa-chevron-right" style="color:var(--muted-2)"></i>
+          </li>
+          <li class="list-item interactive" data-go="settings">
+            <span class="kpi-icon"><i class="fa-solid fa-gear"></i></span>
+            <span class="li-main"><span class="li-title" data-i18n="set.title">সেটিংস</span></span>
+            <i class="fa-solid fa-chevron-right" style="color:var(--muted-2)"></i>
+          </li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3 style="font-size:15px" data-i18n="prof.edit">প্রোফাইল সম্পাদনা</h3>
+        <form id="profile-form">
+          <div class="field">
+            <label for="prof-name" data-i18n="auth.fullName">পূর্ণ নাম</label>
+            <input class="input" id="prof-name">
+          </div>
+          <div class="field">
+            <label for="prof-email" data-i18n="common.email">ইমেইল</label>
+            <input class="input" id="prof-email" type="email">
+          </div>
+          <div class="field">
+            <label for="prof-emergency" data-i18n="prof.emergencyContact">জরুরি যোগাযোগ</label>
+            <input class="input" id="prof-emergency" type="tel">
+          </div>
+          <button class="btn btn-primary btn-block" type="submit" data-i18n="prof.saveChanges">পরিবর্তন সংরক্ষণ</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ============================== WALLET ================================ -->
+    <section id="scr-wallet" class="screen hidden">
+      <div class="card mb-4" style="background:linear-gradient(150deg,var(--brand-500),var(--brand-700));color:#fff;border:0">
+        <div style="font-size:12px;opacity:.85" data-i18n="wallet.balance">ব্যালেন্স</div>
+        <div style="font-size:36px;font-weight:800" id="wallet-balance">৳0</div>
+        <button class="btn btn-lg mt-4" id="wallet-topup" style="background:rgba(255,255,255,.2);color:#fff">
+          <i class="fa-solid fa-plus"></i><span data-i18n="wallet.addMoney">টাকা যোগ করুন</span>
+        </button>
+      </div>
+      <h3 data-i18n="wallet.transactions">লেনদেন</h3>
+      <div class="card card-flush"><ul class="list" id="wallet-tx"></ul></div>
+    </section>
+
+    <!-- =========================== NOTIFICATIONS ============================ -->
+    <section id="scr-notifications" class="screen hidden">
+      <div class="row-between mb-4">
+        <h2 style="margin:0" data-i18n="notif.title">নোটিফিকেশন</h2>
+        <button class="btn btn-ghost btn-sm" id="notif-mark-all" data-i18n="notif.markAll">সব পড়া হয়েছে</button>
+      </div>
+      <div id="notif-list"></div>
+    </section>
+
+    <!-- ============================== SUPPORT =============================== -->
+    <section id="scr-support" class="screen hidden">
+      <div class="card mb-4">
+        <h3 style="font-size:15px" data-i18n="sup.newTicket">নতুন অনুরোধ</h3>
+        <form id="ticket-form">
+          <div class="field">
+            <label for="ticket-category" data-i18n="sup.category">শ্রেণি</label>
+            <select class="select" id="ticket-category">
+              <option value="ride" data-i18n="sup.cat.ride">রাইড সমস্যা</option>
+              <option value="payment" data-i18n="sup.cat.payment">পেমেন্ট</option>
+              <option value="driver" data-i18n="sup.cat.driver">চালক সংক্রান্ত</option>
+              <option value="lost" data-i18n="sup.cat.lost">হারানো জিনিস</option>
+              <option value="safety" data-i18n="sup.cat.other">নিরাপত্তা</option>
+              <option value="other" data-i18n="sup.cat.other">অন্যান্য</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="ticket-subject" data-i18n="sup.subject">বিষয়</label>
+            <input class="input" id="ticket-subject" required>
+          </div>
+          <div class="field">
+            <label for="ticket-message" data-i18n="sup.message">বিবরণ</label>
+            <textarea class="textarea" id="ticket-message" required></textarea>
+          </div>
+          <button class="btn btn-primary btn-block" type="submit" data-i18n="sup.submit">অনুরোধ পাঠান</button>
+        </form>
+      </div>
+
+      <h3 data-i18n="sup.myTickets">আমার অনুরোধ</h3>
+      <div id="ticket-list"></div>
+
+      <div class="card mt-4">
+        <h3 style="font-size:15px" data-i18n="ride.emergencyContacts">জরুরি নম্বর</h3>
+        <ul class="list">
+          <li class="list-item">
+            <span class="kpi-icon" style="background:rgba(229,72,77,.12);color:var(--danger-500)"><i class="fa-solid fa-truck-medical"></i></span>
+            <span class="li-main"><span class="li-title">National Emergency</span><span class="li-sub">999</span></span>
+            <a class="btn btn-sm btn-ghost" href="tel:999"><i class="fa-solid fa-phone"></i></a>
+          </li>
+          <li class="list-item">
+            <span class="kpi-icon"><i class="fa-solid fa-headset"></i></span>
+            <span class="li-main"><span class="li-title" data-i18n="sup.call">হটলাইন</span><span class="li-sub" id="support-hotline">16247</span></span>
+            <a class="btn btn-sm btn-ghost" href="tel:16247"><i class="fa-solid fa-phone"></i></a>
+          </li>
+          <li class="list-item">
+            <span class="kpi-icon"><i class="fa-solid fa-envelope"></i></span>
+            <span class="li-main"><span class="li-title" data-i18n="sup.email">ইমেইল</span><span class="li-sub" id="support-email">support@pothik.com.bd</span></span>
+            <a class="btn btn-sm btn-ghost" id="support-mailto"><i class="fa-solid fa-paper-plane"></i></a>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================= SETTINGS =============================== -->
+    <section id="scr-settings" class="screen hidden">
+      <div class="card card-flush mb-4">
+        <ul class="list">
+          <li class="list-item">
+            <span class="kpi-icon"><i class="fa-solid fa-language"></i></span>
+            <span class="li-main"><span class="li-title" data-i18n="set.language">ভাষা</span></span>
+            <div class="segmented" id="set-lang">
+              <button data-lang="bn">বাংলা</button>
+              <button data-lang="en">English</button>
+            </div>
+          </li>
+          <li class="list-item">
+            <span class="kpi-icon"><i class="fa-solid fa-moon"></i></span>
+            <span class="li-main"><span class="li-title" data-i18n="set.darkMode">ডার্ক মোড</span></span>
+            <label class="switch"><input type="checkbox" id="set-dark"><span class="track"></span></label>
+          </li>
+          <li class="list-item">
+            <span class="kpi-icon"><i class="fa-solid fa-bell"></i></span>
+            <span class="li-main"><span class="li-title" data-i18n="set.push">পুশ নোটিফিকেশন</span></span>
+            <label class="switch"><input type="checkbox" id="set-push" checked><span class="track"></span></label>
+          </li>
+          <li class="list-item">
+            <span class="kpi-icon"><i class="fa-solid fa-volume-high"></i></span>
+            <span class="li-main"><span class="li-title" data-i18n="set.sound">শব্দ</span></span>
+            <label class="switch"><input type="checkbox" id="set-sound" checked><span class="track"></span></label>
+          </li>
+        </ul>
+      </div>
+
+      <div class="card card-flush mb-4">
+        <ul class="list">
+          <li class="list-item">
+            <span class="kpi-icon"><i class="fa-solid fa-flask"></i></span>
+            <span class="li-main">
+              <span class="li-title">Demo auto-accept</span>
+              <span class="li-sub">Simulate a driver accepting when no real driver app is open</span>
+            </span>
+            <label class="switch"><input type="checkbox" id="set-autodemo" checked><span class="track"></span></label>
+          </li>
+          <li class="list-item">
+            <span class="kpi-icon"><i class="fa-solid fa-cloud-arrow-up"></i></span>
+            <span class="li-main">
+              <span class="li-title" data-i18n="admin.settings">Sync queue</span>
+              <span class="li-sub" id="set-queue">0 pending</span>
+            </span>
+            <button class="btn btn-sm btn-ghost" id="set-flush"><i class="fa-solid fa-rotate"></i></button>
+          </li>
+        </ul>
+      </div>
+
+      <div class="card card-flush mb-4">
+        <ul class="list">
+          <li class="list-item interactive" onclick="location.href='../terms.html'">
+            <span class="li-main"><span class="li-title" data-i18n="set.terms">শর্তাবলী</span></span>
+            <i class="fa-solid fa-chevron-right" style="color:var(--muted-2)"></i>
+          </li>
+          <li class="list-item interactive" onclick="location.href='../privacy.html'">
+            <span class="li-main"><span class="li-title" data-i18n="set.privacy">গোপনীয়তা নীতি</span></span>
+            <i class="fa-solid fa-chevron-right" style="color:var(--muted-2)"></i>
+          </li>
+          <li class="list-item interactive" id="set-about">
+            <span class="li-main"><span class="li-title" data-i18n="set.about">পথিক সম্পর্কে</span></span>
+            <i class="fa-solid fa-chevron-right" style="color:var(--muted-2)"></i>
+          </li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="row-between mb-3">
+          <span style="font-size:13px;color:var(--muted)"><span data-i18n="set.version">সংস্করণ</span> 1.0.0</span>
+          <span class="badge badge-brand">Pothik</span>
+        </div>
+        <button class="btn btn-danger btn-block" id="set-logout" data-i18n="auth.logout">লগআউট</button>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<nav id="app-nav" class="app-nav hidden" aria-label="Primary"></nav>
+
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="../js/core/i18n.js"></script>
+<script src="../js/core/store.js"></script>
+<script src="../js/core/db.js"></script>
+<script src="../js/core/geo.js"></script>
+<script src="../js/core/settings.js"></script>
+<script src="../js/core/fare.js"></script>
+<script src="../js/core/ride-state.js"></script>
+<script src="../js/core/matching.js"></script>
+<script src="../js/core/auth.js"></script>
+<script src="../js/core/notify.js"></script>
+<script src="../js/core/ui.js"></script>
+<script src="../js/core/map.js"></script>
+<script src="../js/core/seed.js"></script>
+<script src="../js/app/shell.js"></script>
+<script src="../js/app/passenger-ride.js"></script>
+<script src="../js/app/passenger.js"></script>
+</body>
+</html>

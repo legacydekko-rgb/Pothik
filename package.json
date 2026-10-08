@@ -1,0 +1,29 @@
+{
+  "name": "pothik",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Pothik — ride-sharing platform for Bangladesh. Static PWA wrapped as an Android app with Capacitor, built in the cloud by GitHub Actions (no Android Studio needed).",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "check": "node scripts/check-syntax.mjs",
+    "patch:android": "node scripts/patch-android.mjs",
+    "www": "node scripts/copy-www.mjs",
+    "icon": "node scripts/gen-icon.mjs",
+    "app-url": "node scripts/set-app-url.mjs",
+    "android:add": "npx cap add android",
+    "android:sync": "npx cap sync android",
+    "android:apk": "npm run www && npx cap sync android && cd android && ./gradlew assembleRelease"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.2.0",
+    "@capacitor/core": "^6.2.0"
+  },
+  "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^6.2.0",
+    "sharp": "^0.33.5"
+  }
+}

@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Pothik">
+  <defs>
+    <linearGradient id="pothikBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0E9C70"/>
+      <stop offset="0.55" stop-color="#0A7C5A"/>
+      <stop offset="1" stop-color="#06503A"/>
+    </linearGradient>
+    <linearGradient id="pothikRoute" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.95"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="512" height="512" rx="116" fill="url(#pothikBg)"/>
+
+  <!-- route stroke: a road curving across the tile -->
+  <path d="M96 372 C 170 372, 168 250, 232 216 C 286 187, 300 160, 338 128"
+        fill="none" stroke="url(#pothikRoute)" stroke-width="20"
+        stroke-linecap="round" stroke-dasharray="2 34" opacity="0.5"/>
+  <path d="M96 372 C 170 372, 168 250, 232 216 C 286 187, 300 160, 338 128"
+        fill="none" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round"
+        stroke-dasharray="34 46" opacity="0.42"/>
+
+  <!-- the Bengali letter প (Pothik = traveller) -->
+  <text x="256" y="322" text-anchor="middle"
+        font-family="'Noto Sans Bengali','Nirmala UI','Vrinda',sans-serif"
+        font-size="248" font-weight="700" fill="#FFFFFF">প</text>
+
+  <!-- destination dot in the accent colour -->
+  <circle cx="338" cy="128" r="27" fill="#FF5A36"/>
+  <circle cx="338" cy="128" r="27" fill="none" stroke="#FFFFFF" stroke-width="7" opacity="0.92"/>
+</svg>

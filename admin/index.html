@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="bn" data-lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#054A37">
+<title>পথিক · প্রশাসক প্যানেল</title>
+<link rel="icon" href="../images/icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+<link rel="stylesheet" href="../css/tokens.css">
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/components.css">
+<link rel="stylesheet" href="../css/app.css">
+</head>
+<body>
+
+<!-- ============================ LOGIN GATE ============================== -->
+<div id="admin-gate" class="app-shell" style="max-width:460px;padding-top:8vh">
+  <div class="card">
+    <div class="center mb-4">
+      <span class="brand-mark" style="width:56px;height:56px;font-size:25px;border-radius:17px;margin:0 auto 12px">প</span>
+      <h1 style="font-size:22px;margin-bottom:4px" data-i18n="admin.title">প্রশাসক প্যানেল</h1>
+      <p style="color:var(--muted);font-size:13px" data-i18n="landing.admin.desc">প্ল্যাটফর্ম পরিচালনা ও নিরীক্ষণ</p>
+    </div>
+
+    <div class="alert alert-warn mb-4" style="font-size:12px">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      <span data-i18n="admin.securityNote">Demo admin credentials are shown below. In production, replace this client-side gate with server-side authentication — see docs/SECURITY.md.</span>
+    </div>
+
+    <form id="gate-form">
+      <div class="field">
+        <label for="gate-phone" data-i18n="common.phone">মোবাইল নম্বর</label>
+        <div class="phone-field">
+          <span class="cc">+880</span>
+          <input class="input grow" id="gate-phone" type="tel" inputmode="numeric" value="1700000001" autocomplete="username">
+        </div>
+      </div>
+      <div class="field">
+        <label for="gate-password" data-i18n="auth.password">পাসওয়ার্ড</label>
+        <div class="input-group">
+          <i class="fa-solid fa-lock ig-icon"></i>
+          <input class="input" id="gate-password" type="password" value="admin1234" autocomplete="current-password">
+        </div>
+      </div>
+      <span class="err" id="gate-err" style="display:block;color:var(--danger-500);font-size:12px;font-weight:600;min-height:18px"></span>
+      <button class="btn btn-primary btn-block btn-lg mt-2" type="submit" data-i18n="auth.login">লগইন</button>
+    </form>
+    <p class="center mt-4" style="font-size:12px;color:var(--muted)">
+      Demo: <code>1700000001 / admin1234</code>
+    </p>
+    <p class="center mt-2">
+      <a href="../index.html" style="font-size:12px"><i class="fa-solid fa-arrow-left"></i> <span data-i18n="common.back">পেছনে</span></a>
+    </p>
+  </div>
+</div>
+
+<!-- ============================= DASHBOARD ============================== -->
+<div class="admin-shell hidden" id="admin-app">
+  <div class="admin-scrim" id="admin-scrim"></div>
+
+  <aside class="admin-side" id="admin-side">
+    <div class="admin-brand">
+      <span class="mark">প</span>
+      <div>
+        <strong data-i18n="app.name">পথিক</strong>
+        <small data-i18n="admin.title">প্রশাসক প্যানেল</small>
+      </div>
+    </div>
+
+    <nav class="admin-nav" id="admin-nav" aria-label="Admin sections"></nav>
+
+    <div style="padding:14px;border-top:1px solid rgba(255,255,255,.1)">
+      <div class="row gap-3 mb-3">
+        <span id="admin-avatar"></span>
+        <div style="min-width:0">
+          <strong style="display:block;font-size:13px;color:#fff" id="admin-name">—</strong>
+          <span style="font-size:11px;color:rgba(255,255,255,.55)" id="admin-role">—</span>
+        </div>
+      </div>
+      <button class="btn btn-ghost btn-block btn-sm" id="admin-logout" style="color:#fff;border-color:rgba(255,255,255,.2)">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i><span data-i18n="auth.logout">লগআউট</span>
+      </button>
+    </div>
+  </aside>
+
+  <div class="admin-main">
+    <header class="admin-top">
+      <button class="btn btn-icon btn-ghost admin-burger" id="admin-burger" aria-label="Toggle menu">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+      <div class="grow">
+        <div class="crumb" id="admin-crumb">—</div>
+        <h1 id="admin-title">—</h1>
+      </div>
+      <span id="admin-conn"></span>
+      <span class="badge badge-neutral" id="admin-updated">—</span>
+      <button class="btn btn-ghost btn-sm" id="admin-lang">
+        <i class="fa-solid fa-language"></i><span>EN</span>
+      </button>
+      <button class="btn btn-ghost btn-sm" id="admin-refresh"><i class="fa-solid fa-rotate"></i></button>
+    </header>
+
+    <div class="admin-body" id="admin-body"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="../js/core/i18n.js"></script>
+<script src="../js/core/store.js"></script>
+<script src="../js/core/db.js"></script>
+<script src="../js/core/geo.js"></script>
+<script src="../js/core/settings.js"></script>
+<script src="../js/core/fare.js"></script>
+<script src="../js/core/ride-state.js"></script>
+<script src="../js/core/matching.js"></script>
+<script src="../js/core/auth.js"></script>
+<script src="../js/core/notify.js"></script>
+<script src="../js/core/ui.js"></script>
+<script src="../js/core/seed.js"></script>
+<script src="../js/app/shell.js"></script>
+<script src="../js/admin/admin.js"></script>
+</body>
+</html>

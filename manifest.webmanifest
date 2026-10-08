@@ -1,0 +1,23 @@
+{
+  "name": "Pothik — Ride Sharing Bangladesh",
+  "short_name": "Pothik",
+  "description": "পথিক — Bangladesh ride-sharing platform. Bike, CNG and car rides with transparent fares, verified drivers and live GPS tracking.",
+  "start_url": "index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F4F7F6",
+  "theme_color": "#0A7C5A",
+  "lang": "bn",
+  "dir": "ltr",
+  "categories": ["travel", "navigation", "business"],
+  "icons": [
+    { "src": "images/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "images/icon-maskable.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Book a ride", "short_name": "Book", "url": "app/index.html" },
+    { "name": "Driver mode", "short_name": "Drive", "url": "driver/index.html" },
+    { "name": "Admin", "short_name": "Admin", "url": "admin/index.html" }
+  ]
+}

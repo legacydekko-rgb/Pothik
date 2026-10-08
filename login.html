@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="bn" data-lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0A7C5A">
+<title>লগইন · Pothik</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="images/icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/components.css">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<div class="app-shell">
+  <header class="app-header" id="app-header">
+    <button class="back" id="header-back" aria-label="Back"><i class="fa-solid fa-arrow-left"></i></button>
+    <h1 class="grow" id="header-title">লগইন</h1>
+    <button class="btn btn-ghost btn-sm" id="lang-toggle" aria-label="Change language">
+      <i class="fa-solid fa-language"></i><span>EN</span>
+    </button>
+  </header>
+
+  <main class="app-main" id="main">
+
+    <!-- ============================ STEP 1: PHONE ============================ -->
+    <section class="screen" id="step-phone">
+      <div class="center mt-4 mb-6">
+        <span class="brand-mark" style="width:64px;height:64px;font-size:30px;border-radius:20px;margin:0 auto 12px">প</span>
+        <h1 id="phone-heading" data-i18n="auth.loginTitle">আবার স্বাগতম</h1>
+        <p style="color:var(--muted)" id="phone-sub" data-i18n="auth.loginSub">আপনার মোবাইল নম্বর দিয়ে প্রবেশ করুন</p>
+      </div>
+
+      <div class="card">
+        <form id="phone-form" novalidate>
+          <div class="field">
+            <label for="phone-input" data-i18n="common.phone">মোবাইল নম্বর</label>
+            <div class="phone-field">
+              <span class="cc"><i class="fa-solid fa-flag"></i> +880</span>
+              <input class="input grow" id="phone-input" name="phone" type="tel"
+                     inputmode="numeric" autocomplete="tel-national" maxlength="14"
+                     placeholder="17XXXXXXXX" required>
+            </div>
+            <span class="err" id="phone-err" data-i18n="auth.invalidPhone">সঠিক বাংলাদেশি মোবাইল নম্বর দিন</span>
+            <span class="hint" data-i18n="auth.otpSub">৬ ডিজিটের কোড পাঠানো হবে</span>
+          </div>
+
+          <div class="field" id="password-field" style="display:none">
+            <label for="password-input" data-i18n="auth.password">পাসওয়ার্ড</label>
+            <div class="input-group">
+              <i class="fa-solid fa-lock ig-icon"></i>
+              <input class="input" id="password-input" type="password" autocomplete="current-password" placeholder="••••••••">
+              <span class="ig-suffix">
+                <button type="button" class="btn btn-ghost btn-icon btn-sm" id="toggle-pw" aria-label="Show password">
+                  <i class="fa-solid fa-eye"></i>
+                </button>
+              </span>
+            </div>
+            <span class="err" id="pw-err"></span>
+          </div>
+
+          <button class="btn btn-primary btn-block btn-lg" type="submit" id="phone-submit" data-i18n="auth.sendOtp">
+            ওটিপি পাঠান
+          </button>
+
+          <p class="center mt-4" style="font-size:13px;color:var(--muted)">
+            <span id="switch-hint" data-i18n="auth.noAccount">অ্যাকাউন্ট নেই?</span>
+            <button type="button" class="btn-reset" id="switch-mode" style="color:var(--brand-500);font-weight:700" data-i18n="auth.register">নতুন অ্যাকাউন্ট</button>
+          </p>
+        </form>
+      </div>
+
+      <div class="mt-6" id="demo-box">
+        <div class="alert alert-info">
+          <i class="fa-solid fa-flask"></i>
+          <div>
+            <strong>Demo login</strong>
+            <div id="demo-creds" style="margin-top:4px;font-family:var(--font-mono);font-size:12px"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ STEP 2: REGISTER ========================= -->
+    <section class="screen hidden" id="step-register">
+      <h1 data-i18n="auth.registerTitle">অ্যাকাউন্ট খুলুন</h1>
+      <p style="color:var(--muted)" id="register-role-note"></p>
+
+      <div class="card">
+        <form id="register-form" novalidate>
+          <div class="field">
+            <label for="reg-name" data-i18n="auth.fullName">পূর্ণ নাম</label>
+            <div class="input-group">
+              <i class="fa-solid fa-user ig-icon"></i>
+              <input class="input" id="reg-name" autocomplete="name" placeholder="আপনার নাম" required>
+            </div>
+            <span class="err" data-i18n="auth.nameRequired">নাম লিখুন</span>
+          </div>
+
+          <div class="field">
+            <label for="reg-phone" data-i18n="common.phone">মোবাইল নম্বর</label>
+            <div class="phone-field">
+              <span class="cc">+880</span>
+              <input class="input grow" id="reg-phone" type="tel" inputmode="numeric" maxlength="14" placeholder="17XXXXXXXX" required>
+            </div>
+            <span class="err" data-i18n="auth.invalidPhone">সঠিক নম্বর দিন</span>
+          </div>
+
+          <div class="field">
+            <label for="reg-email"><span data-i18n="common.email">ইমেইল</span> <span style="color:var(--muted-2);font-weight:400">(<span data-i18n="common.optional">ঐচ্ছিক</span>)</span></label>
+            <div class="input-group">
+              <i class="fa-solid fa-envelope ig-icon"></i>
+              <input class="input" id="reg-email" type="email" autocomplete="email" placeholder="you@example.com">
+            </div>
+          </div>
+
+          <div class="field" id="reg-vehicle-field" style="display:none">
+            <label data-i18n="drv.vehicleType">যানবাহনের ধরন</label>
+            <select class="select" id="reg-vehicle">
+              <option value="bike" data-i18n="veh.bike">বাইক</option>
+              <option value="cng" data-i18n="veh.cng">সিএনজি</option>
+              <option value="car" data-i18n="veh.car">কার</option>
+            </select>
+            <span class="hint" data-i18n="drv.appSubmittedSub">আবেদনের পর আমাদের দল আপনার নথি যাচাই করবে।</span>
+          </div>
+
+          <div class="field">
+            <label for="reg-pw" data-i18n="auth.password">পাসওয়ার্ড</label>
+            <div class="input-group">
+              <i class="fa-solid fa-lock ig-icon"></i>
+              <input class="input" id="reg-pw" type="password" autocomplete="new-password" placeholder="••••••••" required>
+            </div>
+            <span class="err" data-i18n="auth.passwordShort">পাসওয়ার্ড অন্তত ৬ অক্ষরের হতে হবে</span>
+          </div>
+
+          <div class="field">
+            <label for="reg-pw2" data-i18n="auth.confirmPassword">পাসওয়ার্ড নিশ্চিত করুন</label>
+            <div class="input-group">
+              <i class="fa-solid fa-lock ig-icon"></i>
+              <input class="input" id="reg-pw2" type="password" autocomplete="new-password" placeholder="••••••••" required>
+            </div>
+            <span class="err" data-i18n="auth.passwordMismatch">পাসওয়ার্ড মিলছে না</span>
+          </div>
+
+          <div class="field">
+            <label for="reg-emergency"><span data-i18n="prof.emergencyContact">জরুরি যোগাযোগ</span> <span style="color:var(--muted-2);font-weight:400">(<span data-i18n="common.optional">ঐচ্ছিক</span>)</span></label>
+            <div class="input-group">
+              <i class="fa-solid fa-heart-pulse ig-icon"></i>
+              <input class="input" id="reg-emergency" type="tel" inputmode="numeric" placeholder="017XXXXXXXX">
+            </div>
+          </div>
+
+          <label class="check mb-4">
+            <input type="checkbox" id="reg-agree" required>
+            <span data-i18n="auth.agree">আমি শর্তাবলী ও গোপনীয়তা নীতি মেনে নিচ্ছি</span>
+          </label>
+
+          <button class="btn btn-primary btn-block btn-lg" type="submit" data-i18n="auth.register">নতুন অ্যাকাউন্ট</button>
+          <p class="center mt-4" style="font-size:13px;color:var(--muted)">
+            <span data-i18n="auth.hasAccount">আগেই অ্যাকাউন্ট আছে?</span>
+            <button type="button" class="btn-reset" id="back-to-login" style="color:var(--brand-500);font-weight:700" data-i18n="auth.login">লগইন</button>
+          </p>
+        </form>
+      </div>
+    </section>
+
+    <!-- ============================== STEP 3: OTP ============================ -->
+    <section class="screen hidden" id="step-otp">
+      <div class="center mt-4 mb-6">
+        <span class="kpi-icon" style="width:64px;height:64px;font-size:26px;margin:0 auto 12px;background:var(--brand-50);color:var(--brand-600)">
+          <i class="fa-solid fa-shield-halved"></i>
+        </span>
+        <h1 data-i18n="auth.otpTitle">যাচাইকরণ কোড</h1>
+        <p style="color:var(--muted)">
+          <span data-i18n="auth.otpSub">৬ ডিজিটের কোড পাঠানো হয়েছে</span>
+          <strong id="otp-phone" style="color:var(--ink)"></strong>
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="otp-row" id="otp-row" role="group" aria-label="OTP">
+          <input type="text" inputmode="numeric" maxlength="1" aria-label="digit 1">
+          <input type="text" inputmode="numeric" maxlength="1" aria-label="digit 2">
+          <input type="text" inputmode="numeric" maxlength="1" aria-label="digit 3">
+          <input type="text" inputmode="numeric" maxlength="1" aria-label="digit 4">
+          <input type="text" inputmode="numeric" maxlength="1" aria-label="digit 5">
+          <input type="text" inputmode="numeric" maxlength="1" aria-label="digit 6">
+        </div>
+
+        <div class="alert alert-info mt-4" id="otp-demo-box">
+          <i class="fa-solid fa-flask"></i>
+          <div><span data-i18n="auth.otpDemo">ডেমো মোড: কোড</span> <strong id="otp-demo-code" style="font-family:var(--font-mono)"></strong></div>
+        </div>
+        <p class="center mt-3" style="color:var(--danger-500);font-size:13px;font-weight:600" id="otp-error"></p>
+
+        <button class="btn btn-primary btn-block btn-lg mt-4" id="otp-verify" data-i18n="auth.verifyOtp">ওটিপি যাচাই</button>
+
+        <div class="row-between mt-4">
+          <button type="button" class="btn btn-ghost btn-sm" id="otp-change" data-i18n="auth.changeNumber">নম্বর পরিবর্তন করুন</button>
+          <button type="button" class="btn btn-soft btn-sm" id="otp-resend" data-i18n="auth.resend">আবার পাঠান</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ STEP 4: SUCCESS ========================== -->
+    <section class="screen hidden" id="step-done">
+      <div class="center mt-6">
+        <span class="kpi-icon" style="width:80px;height:80px;font-size:34px;margin:0 auto 16px;background:rgba(18,161,80,.12);color:var(--success-500)">
+          <i class="fa-solid fa-circle-check"></i>
+        </span>
+        <h1 id="done-title" data-i18n="auth.welcome">স্বাগতম</h1>
+        <p style="color:var(--muted)" id="done-sub"></p>
+        <div class="mt-6" style="max-width:280px;margin-inline:auto">
+          <div class="progress"><span id="done-bar" style="width:8%"></span></div>
+        </div>
+        <p class="mt-4" style="color:var(--muted);font-size:13px" data-i18n="splash.loading">প্রস্তুত হচ্ছে…</p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<script src="js/core/i18n.js"></script>
+<script src="js/core/store.js"></script>
+<script src="js/core/db.js"></script>
+<script src="js/core/geo.js"></script>
+<script src="js/core/settings.js"></script>
+<script src="js/core/fare.js"></script>
+<script src="js/core/ride-state.js"></script>
+<script src="js/core/matching.js"></script>
+<script src="js/core/auth.js"></script>
+<script src="js/core/notify.js"></script>
+<script src="js/core/ui.js"></script>
+<script src="js/core/seed.js"></script>
+<script src="js/app/shell.js"></script>
+<script src="js/pages/login.js"></script>
+</body>
+</html>

@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="bn" data-lang="bn" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0A1310">
+<title>পথিক · চালক</title>
+<link rel="manifest" href="../manifest.webmanifest">
+<link rel="icon" href="../images/icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Noto+Sans+Bengali:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="../css/tokens.css">
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/components.css">
+<link rel="stylesheet" href="../css/app.css">
+</head>
+<body>
+<a class="skip-link" href="#app-main">Skip to content</a>
+
+<div class="app-shell">
+  <header class="app-header" id="app-header">
+    <span class="brand-mark" aria-hidden="true">প</span>
+    <h1 class="grow" id="header-title">চালক</h1>
+    <button class="btn btn-ghost btn-sm" id="lang-toggle" aria-label="Change language">
+      <i class="fa-solid fa-language"></i><span>EN</span>
+    </button>
+  </header>
+
+  <main class="app-main" id="app-main">
+
+    <!-- ================================ HOME ================================ -->
+    <section id="scr-home">
+      <div class="row-between mb-4">
+        <div class="row gap-3">
+          <span id="drv-avatar"></span>
+          <div>
+            <strong id="drv-name" style="display:block">—</strong>
+            <span style="font-size:12px;color:var(--muted)" id="drv-rating"></span>
+          </div>
+        </div>
+        <span id="conn-pill"></span>
+      </div>
+
+      <div class="online-panel off" id="online-panel">
+        <div class="row-between" style="position:relative;z-index:2">
+          <div style="text-align:left">
+            <div class="row gap-2 mb-2">
+              <i class="fa-solid fa-power-off" id="online-icon" style="font-size:18px"></i>
+              <strong style="font-size:17px" id="online-title">আপনি অফলাইন আছেন</strong>
+            </div>
+            <p class="op-sub" id="online-sub" style="margin:0;font-size:13px">রাইড পেতে অনলাইন হোন</p>
+          </div>
+          <label class="switch"><input type="checkbox" id="home-online" aria-label="Go online"><span class="track"></span></label>
+        </div>
+      </div>
+
+      <div class="kpi-grid mt-4" style="grid-template-columns:1fr 1fr">
+        <div class="kpi">
+          <span class="kpi-label" data-i18n="drvHome.todayEarnings">আজকের আয়</span>
+          <span class="kpi-value" id="home-earnings">৳0</span>
+        </div>
+        <div class="kpi">
+          <span class="kpi-label" data-i18n="drvHome.todayRides">আজকের রাইড</span>
+          <span class="kpi-value" id="home-rides">0</span>
+        </div>
+        <div class="kpi">
+          <span class="kpi-label" data-i18n="drvHome.onlineHours">অনলাইন সময়</span>
+          <span class="kpi-value" id="home-hours">0h</span>
+        </div>
+        <div class="kpi">
+          <span class="kpi-label" data-i18n="drvHome.acceptance">গ্রহণের হার</span>
+          <span class="kpi-value" id="home-acceptance">100%</span>
+        </div>
+      </div>
+
+      <div class="card mt-4">
+        <div class="row gap-3">
+          <span class="kpi-icon" style="background:var(--brand-50);color:var(--brand-600)"><i class="fa-solid fa-road"></i></span>
+          <div class="grow">
+            <strong style="display:block"><span id="home-total-rides">0</span> <span data-i18n="prof.totalRides">মোট রাইড</span></strong>
+            <span style="font-size:12px;color:var(--muted)" data-i18n="drvHome.noRequestsSub">অনলাইন থাকুন — কাছাকাছি রাইড এলে জানানো হবে</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mt-4">
+        <div class="row gap-3">
+          <span class="kpi-icon" style="background:rgba(43,127,255,.12);color:#1B5FC4"><i class="fa-solid fa-shield-halved"></i></span>
+          <div class="grow">
+            <strong style="display:block;font-size:14px" data-i18n="drv.statusTitle">অনুমোদনের অবস্থা</strong>
+            <span style="font-size:12px;color:var(--muted)" id="home-status-note"></span>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="location.hash='#status'"><i class="fa-solid fa-chevron-right"></i></button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================ ONBOARDING ============================== -->
+    <section id="scr-onboarding" class="screen hidden">
+      <div class="mb-4">
+        <div class="row-between mb-2">
+          <strong id="ob-step-label" style="font-size:13px"></strong>
+          <span style="font-size:12px;color:var(--muted)" data-i18n="drv.needDocs">আবেদন জমা দিতে সব নথি আপলোড করুন</span>
+        </div>
+        <div class="progress"><span id="ob-progress" style="width:20%"></span></div>
+      </div>
+
+      <!-- Step 1: personal -->
+      <div id="ob-step-personal">
+        <div class="card">
+          <h3 style="font-size:15px" data-i18n="drv.personal">ব্যক্তিগত তথ্য</h3>
+          <div class="field">
+            <label for="ob-name" data-i18n="auth.fullName">পূর্ণ নাম</label>
+            <input class="input" id="ob-name" autocomplete="name">
+          </div>
+          <div class="field">
+            <label for="ob-phone" data-i18n="common.phone">মোবাইল নম্বর</label>
+            <div class="phone-field">
+              <span class="cc">+880</span>
+              <input class="input grow" id="ob-phone" type="tel" inputmode="numeric" maxlength="14">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: NID -->
+      <div id="ob-step-nid" class="hidden">
+        <div class="card">
+          <h3 style="font-size:15px" data-i18n="drv.nidTitle">জাতীয় পরিচয়পত্র (NID)</h3>
+          <div class="field">
+            <label for="ob-nid" data-i18n="drv.nidNumber">এনআইডি নম্বর</label>
+            <input class="input" id="ob-nid" inputmode="numeric" maxlength="17" placeholder="10 / 13 / 17 digits">
+          </div>
+          <div class="field">
+            <label data-i18n="drv.nidFront">এনআইডি সামনের ছবি</label>
+            <div class="dropzone" id="ob-nid-front" role="button" tabindex="0">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+              <p class="doc-hint" style="margin:0;font-size:13px" data-i18n="drv.uploadHint">ছবি আপলোড করতে ট্যাপ করুন</p>
+              <p class="doc-hint" style="margin:4px 0 0;font-size:11px;color:var(--muted)" data-i18n="drv.uploadMax">সর্বোচ্চ ৫ মেগাবাইট (JPG/PNG)</p>
+              <input type="file" accept="image/*" hidden>
+            </div>
+          </div>
+          <div class="field">
+            <label data-i18n="drv.nidBack">এনআইডি পেছনের ছবি</label>
+            <div class="dropzone" id="ob-nid-back" role="button" tabindex="0">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+              <p class="doc-hint" style="margin:0;font-size:13px" data-i18n="drv.uploadHint">ছবি আপলোড করতে ট্যাপ করুন</p>
+              <input type="file" accept="image/*" hidden>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: licence -->
+      <div id="ob-step-licence" class="hidden">
+        <div class="card">
+          <h3 style="font-size:15px" data-i18n="drv.licenceTitle">ড্রাইভিং লাইসেন্স</h3>
+          <div class="field">
+            <label for="ob-licence" data-i18n="drv.licenceNumber">লাইসেন্স নম্বর</label>
+            <input class="input" id="ob-licence" placeholder="DK1234567/2022">
+          </div>
+          <div class="field">
+            <label data-i18n="drv.licenceImage">লাইসেন্সের ছবি</label>
+            <div class="dropzone" id="ob-licence-img" role="button" tabindex="0">
+              <i class="fa-solid fa-id-card"></i>
+              <p class="doc-hint" style="margin:0;font-size:13px" data-i18n="drv.uploadHint">ছবি আপলোড করতে ট্যাপ করুন</p>
+              <input type="file" accept="image/*" hidden>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 4: vehicle -->
+      <div id="ob-step-vehicle" class="hidden">
+        <div class="card">
+          <h3 style="font-size:15px" data-i18n="drv.vehicleTitle">যানবাহনের তথ্য</h3>
+          <div class="field">
+            <label for="ob-vehicle-type" data-i18n="drv.vehicleType">যানবাহনের ধরন</label>
+            <select class="select" id="ob-vehicle-type">
+              <option value="bike" data-i18n="veh.bike">বাইক</option>
+              <option value="cng" data-i18n="veh.cng">সিএনজি</option>
+              <option value="car" data-i18n="veh.car">কার</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="ob-vehicle-reg" data-i18n="drv.vehicleReg">নিবন্ধন নম্বর</label>
+            <input class="input" id="ob-vehicle-reg" placeholder="DHAKA METRO-GA-12-3456">
+          </div>
+          <div class="field">
+            <label for="ob-vehicle-model" data-i18n="drv.vehicleModel">মডেল</label>
+            <input class="input" id="ob-vehicle-model" placeholder="Toyota Premio">
+          </div>
+          <div class="field">
+            <label for="ob-vehicle-year" data-i18n="drv.vehicleYear">সাল</label>
+            <input class="input" id="ob-vehicle-year" type="number" inputmode="numeric" min="1990" max="2030" placeholder="2018">
+          </div>
+          <div class="field">
+            <label data-i18n="drv.vehicleImage">যানবাহনের ছবি</label>
+            <div class="dropzone" id="ob-vehicle-img" role="button" tabindex="0">
+              <i class="fa-solid fa-car-side"></i>
+              <p class="doc-hint" style="margin:0;font-size:13px" data-i18n="drv.uploadHint">ছবি আপলোড করতে ট্যাপ করুন</p>
+              <input type="file" accept="image/*" hidden>
+            </div>
+          </div>
+          <div class="field">
+            <label data-i18n="drv.profilePhoto">প্রোফাইল ছবি</label>
+            <div class="dropzone" id="ob-photo" role="button" tabindex="0">
+              <i class="fa-solid fa-user-circle"></i>
+              <p class="doc-hint" style="margin:0;font-size:13px" data-i18n="drv.uploadHint">ছবি আপলোড করতে ট্যাপ করুন</p>
+              <input type="file" accept="image/*" hidden>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 5: review -->
+      <div id="ob-step-review" class="hidden">
+        <div class="card mb-4">
+          <h3 style="font-size:15px" data-i18n="admin.docReview">নথি পর্যালোচনা</h3>
+          <ul class="list" id="ob-review"></ul>
+        </div>
+        <div class="card mb-4">
+          <h3 style="font-size:15px" data-i18n="admin.documents">নথি যাচাই</h3>
+          <div class="grid-3" id="ob-doc-previews" style="grid-template-columns:repeat(auto-fit,minmax(110px,1fr))"></div>
+        </div>
+        <div class="alert alert-warn">
+          <i class="fa-solid fa-triangle-exclamation"></i>
+          <span style="font-size:12px" data-i18n="drv.appSubmittedSub">আমাদের দল আপনার নথি যাচাই করবে। সাধারণত ২৪–৪৮ ঘণ্টা লাগে।</span>
+        </div>
+      </div>
+
+      <div class="row gap-3 mt-4">
+        <button class="btn btn-ghost grow" id="ob-back" data-i18n="common.back">পেছনে</button>
+        <button class="btn btn-primary grow" id="ob-next" data-i18n="common.next">পরবর্তী</button>
+        <button class="btn btn-primary grow hidden" id="ob-submit" data-i18n="drv.submitApp">আবেদন জমা দিন</button>
+      </div>
+    </section>
+
+    <!-- ========================== APPROVAL STATUS ============================ -->
+    <section id="scr-status" class="screen hidden">
+      <div class="card center mb-4">
+        <span id="status-icon-wrap" style="width:80px;height:80px;border-radius:50%;display:grid;place-items:center;margin:0 auto 14px;background:var(--surface-2)">
+          <i class="fa-solid fa-hourglass-half" id="status-icon" style="font-size:32px"></i>
+        </span>
+        <h1 id="status-title" style="font-size:22px">যাচাই চলছে</h1>
+        <p style="color:var(--muted)" id="status-desc"></p>
+        <div class="mt-2" id="status-badge"></div>
+      </div>
+
+      <div class="alert alert-danger mb-4 hidden" id="status-reason">
+        <i class="fa-solid fa-circle-xmark"></i>
+        <div><strong data-i18n="drv.reason">কারণ</strong><div id="status-reason-text" style="font-size:13px;margin-top:3px"></div></div>
+      </div>
+
+      <div class="card mb-4">
+        <h3 style="font-size:15px" data-i18n="drv.statusTitle">অনুমোদনের অবস্থা</h3>
+        <ul class="list" id="status-timeline"></ul>
+      </div>
+
+      <div class="card mb-4">
+        <h3 style="font-size:15px" data-i18n="admin.documents">নথি যাচাই</h3>
+        <ul class="list" id="status-docs"></ul>
+      </div>
+
+      <div class="row gap-3">
+        <button class="btn btn-ghost grow" id="status-refresh"><i class="fa-solid fa-rotate"></i><span data-i18n="common.retry">আবার চেষ্টা করুন</span></button>
+        <button class="btn btn-primary grow hidden" id="status-resubmit" data-i18n="common.edit">সম্পাদনা</button>
+      </div>
+      <button class="btn btn-primary btn-block mt-3 hidden" id="status-go-home" onclick="location.reload()" data-i18n="drvHome.title">চালক হোম</button>
+    </section>
+
+    <!-- ========================= INCOMING REQUEST =========================== -->
+    <section id="scr-incoming" class="screen hidden">
+      <div class="card mb-4" style="border:2px solid var(--brand-500)">
+        <div class="row-between mb-3">
+          <div class="row gap-3">
+            <span class="kpi-icon" style="width:50px;height:50px;font-size:22px;background:var(--brand-50);color:var(--brand-600)">
+              <i class="fa-solid fa-car-side" id="offer-vehicle"></i>
+            </span>
+            <div>
+              <div style="font-size:12px;color:var(--muted)" data-i18n="drvHome.incoming">নতুন রাইড অনুরোধ</div>
+              <div style="font-size:26px;font-weight:800" id="offer-fare">—</div>
+            </div>
+          </div>
+          <div class="center">
+            <div style="font-size:22px;font-weight:800;font-family:var(--font-mono)" id="offer-countdown">20s</div>
+            <div style="font-size:11px;color:var(--muted)" data-i18n="drvHome.expires">সময় বাকি</div>
+          </div>
+        </div>
+
+        <div class="progress mb-4"><span id="offer-bar" style="width:100%;background:var(--accent-500)"></span></div>
+
+        <div class="route-summary">
+          <div class="rs-rail">
+            <span class="rs-dot" style="border-color:var(--brand-500);background:var(--brand-500)"></span>
+            <span class="rs-line"></span>
+            <span class="rs-dot" style="border-color:var(--accent-500);background:var(--accent-500)"></span>
+          </div>
+          <div class="grow col gap-3">
+            <div><div class="li-sub" data-i18n="ride.pickupPoint">যাত্রার স্থান</div><strong id="offer-pickup">—</strong></div>
+            <div><div class="li-sub" data-i18n="ride.dropoffPoint">গন্তব্য</div><strong id="offer-dropoff">—</strong></div>
+          </div>
+        </div>
+
+        <div class="grid-3 mt-4" style="grid-template-columns:1fr 1fr 1fr">
+          <div class="center"><div class="li-sub" data-i18n="ride.distance">দূরত্ব</div><strong id="offer-distance">—</strong></div>
+          <div class="center"><div class="li-sub" data-i18n="ride.duration">সময়</div><strong id="offer-duration">—</strong></div>
+          <div class="center"><div class="li-sub" data-i18n="earn.net">আয়</div><strong style="color:var(--success-500)" id="offer-earning">—</strong></div>
+        </div>
+      </div>
+
+      <div class="card mb-4">
+        <div class="row-between">
+          <span style="font-size:13px;color:var(--muted)" data-i18n="ride.eta">পৌঁছানোর সময়</span>
+          <strong><span id="offer-my-distance">—</span> · <span id="offer-my-eta">—</span></strong>
+        </div>
+      </div>
+
+      <div class="row gap-3">
+        <button class="btn btn-ghost grow btn-lg" id="offer-reject" data-i18n="drvHome.reject">প্রত্যাখ্যান</button>
+        <button class="btn btn-primary grow btn-lg" id="offer-accept" data-i18n="drvHome.acceptIn">গ্রহণ করুন</button>
+      </div>
+    </section>
+
+    <!-- ========================== NAVIGATE / TRIP =========================== -->
+    <section id="scr-navigate" class="screen hidden">
+      <div style="position:relative;height:calc(100dvh - 132px);min-height:440px">
+        <div id="map-nav" class="map-canvas map-full"></div>
+
+        <div class="map-overlay-top">
+          <div class="card" style="box-shadow:var(--sh-3);padding:10px 14px">
+            <div class="row-between mb-2">
+              <span id="nav-status"></span>
+              <span style="font-size:12px;color:var(--muted)"><span id="nav-distance">—</span> · <span id="nav-eta">—</span></span>
+            </div>
+            <div class="row gap-2" style="font-size:13px">
+              <i class="fa-solid fa-location-dot" style="color:var(--accent-500)"></i>
+              <div class="grow">
+                <span class="li-sub" id="nav-target-kind">গন্তব্য</span>
+                <strong style="display:block" id="nav-target-label">—</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="map-overlay-bottom" style="bottom:12px">
+          <div class="card" style="box-shadow:var(--sh-3)">
+            <div class="driver-card mb-3" style="box-shadow:none;border:0;padding:0">
+              <span id="nav-pax-avatar"></span>
+              <div class="grow">
+                <strong id="nav-pax-name" style="display:block">—</strong>
+                <span style="font-size:12px;color:var(--muted)" id="nav-pax-phone">—</span>
+              </div>
+              <button class="btn btn-soft btn-icon btn-sm" id="nav-call" aria-label="Call passenger"><i class="fa-solid fa-phone"></i></button>
+            </div>
+
+            <div class="alert alert-warn mb-3 hidden" id="nav-cash">
+              <i class="fa-solid fa-money-bill-wave"></i>
+              <span style="font-size:12px"><span data-i18n="earn.cashCollected">নগদ সংগ্রহ</span>: <strong id="nav-cash-amount">৳0</strong></span>
+            </div>
+
+            <div class="row-between mb-3" style="font-size:13px">
+              <span><span data-i18n="ride.fare">ভাড়া</span>: <strong id="nav-fare">—</strong></span>
+              <span style="color:var(--success-500)"><span data-i18n="earn.net">আয়</span>: <strong id="nav-earning">—</strong></span>
+            </div>
+
+            <button class="btn btn-primary btn-block btn-lg" id="nav-arrived" data-i18n="drvHome.arrivedAtPickup">পৌঁছেছি</button>
+            <button class="btn btn-accent btn-block btn-lg hidden" id="nav-start" data-i18n="drvHome.startRide">যাত্রা শুরু</button>
+            <button class="btn btn-primary btn-block btn-lg hidden" id="nav-end" data-i18n="drvHome.endRide">যাত্রা শেষ</button>
+            <button class="btn btn-ghost btn-block mt-2" id="nav-cancel" data-i18n="ride.cancel">রাইড বাতিল</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================== EARNINGS ============================== -->
+    <section id="scr-earnings" class="screen hidden">
+      <div class="segmented mb-4" id="earn-tabs" role="tablist">
+        <button role="tab" aria-selected="true" data-period="daily" data-i18n="earn.daily">দৈনিক</button>
+        <button role="tab" aria-selected="false" data-period="weekly" data-i18n="earn.weekly">সাপ্তাহিক</button>
+        <button role="tab" aria-selected="false" data-period="monthly" data-i18n="earn.monthly">মাসিক</button>
+      </div>
+
+      <div class="card mb-4 center">
+        <div class="ring-wrap">
+          <svg width="150" height="150" viewBox="0 0 150 150">
+            <circle cx="75" cy="75" r="62" fill="none" stroke="var(--line-2)" stroke-width="14"/>
+            <circle cx="75" cy="75" r="62" fill="none" stroke="var(--brand-500)" stroke-width="14"
+                    stroke-linecap="round" id="earn-ring" stroke-dasharray="0 389"/>
+          </svg>
+          <div class="ring-label">
+            <div>
+              <div style="font-size:26px;font-weight:800" id="earn-ring-pct">0%</div>
+              <div style="font-size:11px;color:var(--muted)" data-i18n="earn.net">আপনার আয়</div>
+            </div>
+          </div>
+        </div>
+        <div style="font-size:34px;font-weight:800;margin-top:8px" id="earn-net">৳0</div>
+        <div style="font-size:12px;color:var(--muted)" data-i18n="earn.net">আপনার আয়</div>
+      </div>
+
+      <div class="kpi-grid mb-4" style="grid-template-columns:1fr 1fr">
+        <div class="kpi"><span class="kpi-label" data-i18n="earn.gross">মোট ভাড়া</span><span class="kpi-value" id="earn-gross">৳0</span></div>
+        <div class="kpi"><span class="kpi-label" data-i18n="earn.commission">কমিশন</span><span class="kpi-value" id="earn-commission" style="color:var(--danger-500)">৳0</span></div>
+        <div class="kpi"><span class="kpi-label" data-i18n="earn.totalTrips">মোট যাত্রা</span><span class="kpi-value" id="earn-trips">0</span></div>
+        <div class="kpi"><span class="kpi-label" data-i18n="earn.avgFare">গড় ভাড়া</span><span class="kpi-value" id="earn-avg">৳0</span></div>
+      </div>
+
+      <div class="card mb-4">
+        <div class="row-between mb-3">
+          <h3 style="font-size:15px;margin:0" data-i18n="earn.byDay">দিন অনুযায়ী</h3>
+          <span style="font-size:12px;color:var(--muted)"><span data-i18n="earn.cashCollected">নগদ</span>: <strong id="earn-cash">৳0</strong></span>
+        </div>
+        <div class="bar-chart" id="earn-bars"></div>
+      </div>
+
+      <div class="card mb-4">
+        <h3 style="font-size:15px" data-i18n="earn.payout">পেআউট</h3>
+        <div class="alert alert-info">
+          <i class="fa-solid fa-circle-info"></i>
+          <span style="font-size:12px" data-i18n="earn.payoutSoon">সাপ্তাহিক পেআউট শীঘ্রই আসছে</span>
+        </div>
+      </div>
+
+      <h3 style="font-size:15px" data-i18n="hist.title">রাইড ইতিহাস</h3>
+      <div class="card card-flush"><ul class="list" id="earn-recent"></ul></div>
+    </section>
+
+    <!-- ============================== HISTORY =============================== -->
+    <section id="scr-history" class="screen hidden">
+      <div id="drv-history"></div>
+    </section>
+
+    <!-- ============================== RATINGS =============================== -->
+    <section id="scr-ratings" class="screen hidden">
+      <div class="card center mb-4">
+        <div style="font-size:44px;font-weight:800;line-height:1" id="drv-avg-rating">5.00</div>
+        <div class="mt-2" id="drv-stars-display"></div>
+        <div style="font-size:12px;color:var(--muted);margin-top:6px">
+          <span id="drv-total-ratings">0</span> <span data-i18n="drvRate.total">মোট রেটিং</span>
+        </div>
+      </div>
+
+      <div class="card mb-4">
+        <h3 style="font-size:15px" data-i18n="drvRate.distribution">রেটিং বিভাজন</h3>
+        <div id="drv-rating-dist"></div>
+      </div>
+
+      <h3 style="font-size:15px" data-i18n="drvRate.recent">সাম্প্রতিক মন্তব্য</h3>
+      <div id="drv-rating-list"></div>
+    </section>
+
+    <!-- =========================== NOTIFICATIONS ============================ -->
+    <section id="scr-notifications" class="screen hidden">
+      <div class="row-between mb-4">
+        <h2 style="margin:0;font-size:18px" data-i18n="notif.title">নোটিফিকেশন</h2>
+        <button class="btn btn-ghost btn-sm" id="drv-notif-mark-all" data-i18n="notif.markAll">সব পড়া হয়েছে</button>
+      </div>
+      <div id="drv-notif-list"></div>
+    </section>
+
+    <!-- ============================== SUPPORT =============================== -->
+    <section id="scr-support" class="screen hidden">
+      <div class="card mb-4">
+        <h3 style="font-size:15px" data-i18n="sup.newTicket">নতুন অনুরোধ</h3>
+        <form id="drv-ticket-form">
+          <div class="field">
+            <label for="drv-ticket-category" data-i18n="sup.category">শ্রেণি</label>
+            <select class="select" id="drv-ticket-category">
+              <option value="ride" data-i18n="sup.cat.ride">রাইড সমস্যা</option>
+              <option value="payment" data-i18n="sup.cat.payment">পেমেন্ট</option>
+              <option value="passenger" data-i18n="sup.cat.passenger">যাত্রী সংক্রান্ত</option>
+              <option value="safety" data-i18n="sup.cat.other">নিরাপত্তা</option>
+              <option value="other" data-i18n="sup.cat.other">অন্যান্য</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="drv-ticket-subject" data-i18n="sup.subject">বিষয়</label>
+            <input class="input" id="drv-ticket-subject" required>
+          </div>
+          <div class="field">
+            <label for="drv-ticket-message" data-i18n="sup.message">বিবরণ</label>
+            <textarea class="textarea" id="drv-ticket-message" required></textarea>
+          </div>
+          <button class="btn btn-primary btn-block" type="submit" data-i18n="sup.submit">অনুরোধ পাঠান</button>
+        </form>
+      </div>
+
+      <h3 style="font-size:15px" data-i18n="sup.myTickets">আমার অনুরোধ</h3>
+      <div id="drv-ticket-list"></div>
+
+      <div class="card mt-4">
+        <ul class="list">
+          <li class="list-item">
+            <span class="kpi-icon"><i class="fa-solid fa-headset"></i></span>
+            <span class="li-main"><span class="li-title" data-i18n="sup.call">হটলাইন</span><span class="li-sub" id="drv-support-hotline">16247</span></span>
+            <a class="btn btn-sm btn-ghost" href="tel:16247"><i class="fa-solid fa-phone"></i></a>
+          </li>
+          <li class="list-item">
+            <span class="kpi-icon"><i class="fa-solid fa-envelope"></i></span>
+            <span class="li-main"><span class="li-title" data-i18n="sup.email">ইমেইল</span><span class="li-sub" id="drv-support-email">support@pothik.com.bd</span></span>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ============================== PROFILE =============================== -->
+    <section id="scr-profile" class="screen hidden">
+      <div class="card center mb-4">
+        <span id="drv-profile-avatar" style="display:inline-block"></span>
+        <h2 class="mt-3" id="drv-profile-name">—</h2>
+        <p style="color:var(--muted)" id="drv-profile-phone">—</p>
+        <div class="row gap-2" style="justify-content:center">
+          <span class="badge badge-brand" id="drv-profile-rating"></span>
+          <span id="drv-profile-status"></span>
+        </div>
+      </div>
+
+      <div class="kpi-grid mb-4" style="grid-template-columns:1fr 1fr 1fr">
+        <div class="kpi"><span class="kpi-label" data-i18n="prof.totalRides">মোট রাইড</span><span class="kpi-value" id="drv-stat-rides">0</span></div>
+        <div class="kpi"><span class="kpi-label" data-i18n="ride.cancelled">বাতিল</span><span class="kpi-value" id="drv-stat-cancels">0</span></div>
+        <div class="kpi"><span class="kpi-label" data-i18n="drvHome.acceptance">গ্রহণ</span><span class="kpi-value" id="drv-stat-acceptance">100%</span></div>
+      </div>
+
+      <div class="card mb-4">
+        <h3 style="font-size:15px" data-i18n="drv.vehicleTitle">যানবাহনের তথ্য</h3>
+        <ul class="list" id="drv-vehicle-info"></ul>
+      </div>
+
+      <div class="card card-flush mb-4">
+        <ul class="list">
+          <li class="list-item interactive" onclick="location.hash='#notifications'">
+            <span class="kpi-icon"><i class="fa-solid fa-bell"></i></span>
+            <span class="li-main"><span class="li-title" data-i18n="notif.title">নোটিফিকেশন</span></span>
+            <i class="fa-solid fa-chevron-right" style="color:var(--muted-2)"></i>
+          </li>
+          <li class="list-item interactive" onclick="location.hash='#support'">
+            <span class="kpi-icon"><i class="fa-solid fa-headset"></i></span>
+            <span class="li-main"><span class="li-title" data-i18n="sup.title">সহায়তা</span></span>
+            <i class="fa-solid fa-chevron-right" style="color:var(--muted-2)"></i>
+          </li>
+          <li class="list-item interactive" onclick="location.hash='#settings'">
+            <span class="kpi-icon"><i class="fa-solid fa-gear"></i></span>
+            <span class="li-main"><span class="li-title" data-i18n="set.title">সেটিংস</span></span>
+            <i class="fa-solid fa-chevron-right" style="color:var(--muted-2)"></i>
+          </li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h3 style="font-size:15px" data-i18n="prof.edit">প্রোফাইল সম্পাদনা</h3>
+        <form id="drv-profile-form">
+          <div class="field">
+            <label for="drv-prof-name" data-i18n="auth.fullName">পূর্ণ নাম</label>
+            <input class="input" id="drv-prof-name">
+          </div>
+          <div class="field">
+            <label for="drv-prof-nid" data-i18n="drv.nidNumber">এনআইডি নম্বর</label>
+            <input class="input" id="drv-prof-nid" inputmode="numeric">
+          </div>
+          <div class="field">
+            <label for="drv-prof-licence" data-i18n="drv.licenceNumber">লাইসেন্স নম্বর</label>
+            <input class="input" id="drv-prof-licence">
+          </div>
+          <button class="btn btn-primary btn-block" type="submit" data-i18n="prof.saveChanges">পরিবর্তন সংরক্ষণ</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- ============================= SETTINGS =============================== -->
+    <section id="scr-settings" class="screen hidden">
+      <div class="card card-flush mb-4">
+        <ul class="list">
+          <li class="list-item">
+            <span class="kpi-icon"><i class="fa-solid fa-language"></i></span>
+            <span class="li-main"><span class="li-title" data-i18n="set.language">ভাষা</span></span>
+            <div class="segmented" id="drv-set-lang">
+              <button data-lang="bn">বাংলা</button>
+              <button data-lang="en">English</button>
+            </div>
+          </li>
+          <li class="list-item">
+            <span class="kpi-icon"><i class="fa-solid fa-volume-high"></i></span>
+            <span class="li-main"><span class="li-title" data-i18n="set.sound">শব্দ</span></span>
+            <label class="switch"><input type="checkbox" id="drv-set-sound" checked><span class="track"></span></label>
+          </li>
+          <li class="list-item">
+            <span class="kpi-icon"><i class="fa-solid fa-mobile-screen"></i></span>
+            <span class="li-main">
+              <span class="li-title">Keep screen awake</span>
+              <span class="li-sub">While online, prevent the screen from sleeping</span>
+            </span>
+            <label class="switch"><input type="checkbox" id="drv-set-keepawake" checked><span class="track"></span></label>
+          </li>
+          <li class="list-item">
+            <span class="kpi-icon"><i class="fa-solid fa-cloud-arrow-up"></i></span>
+            <span class="li-main">
+              <span class="li-title">Sync queue</span>
+              <span class="li-sub" id="drv-set-queue">0 pending</span>
+            </span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <div class="row-between mb-3">
+          <span style="font-size:13px;color:var(--muted)"><span data-i18n="set.version">সংস্করণ</span> <span id="drv-set-version">1.0.0</span></span>
+          <span class="badge badge-brand">Pothik Driver</span>
+        </div>
+        <button class="btn btn-danger btn-block" id="drv-set-logout" data-i18n="auth.logout">লগআউট</button>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<nav id="app-nav" class="app-nav hidden" aria-label="Primary"></nav>
+
+<script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="../js/core/i18n.js"></script>
+<script src="../js/core/store.js"></script>
+<script src="../js/core/db.js"></script>
+<script src="../js/core/geo.js"></script>
+<script src="../js/core/settings.js"></script>
+<script src="../js/core/fare.js"></script>
+<script src="../js/core/ride-state.js"></script>
+<script src="../js/core/matching.js"></script>
+<script src="../js/core/auth.js"></script>
+<script src="../js/core/notify.js"></script>
+<script src="../js/core/ui.js"></script>
+<script src="../js/core/map.js"></script>
+<script src="../js/core/seed.js"></script>
+<script src="../js/app/shell.js"></script>
+<script src="../js/app/driver.js"></script>
+</body>
+</html>
